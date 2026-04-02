@@ -131,6 +131,12 @@
       background: #fff;
     }
 
+    .nav-links a:focus-visible,
+    .btn:focus-visible {
+      outline: 3px solid rgba(13, 160, 255, 0.34);
+      outline-offset: 2px;
+    }
+
     .nav-links .cta-link {
       color: #fff;
       border-color: transparent;
@@ -268,6 +274,132 @@
       color: var(--muted);
       font-size: 0.82rem;
       line-height: 1.45;
+    }
+
+    .quickstart {
+      margin-top: 0.95rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 1.04fr 0.96fr;
+      gap: 0.75rem;
+      align-items: start;
+    }
+
+    .quickstart h2 {
+      margin: 0;
+      font-family: "Newsreader", serif;
+      font-size: clamp(1.45rem, 2.8vw, 1.95rem);
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+    }
+
+    .quickstart p {
+      margin: 0.52rem 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.58;
+      max-width: 58ch;
+    }
+
+    .steps {
+      margin: 0.74rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.44rem;
+    }
+
+    .steps li {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(126deg, #ffffff 0%, #f4f7ff 100%);
+      padding: 0.54rem 0.62rem;
+      font-size: 0.84rem;
+      color: var(--text);
+      line-height: 1.46;
+    }
+
+    .steps strong {
+      color: var(--primary);
+      font-weight: 700;
+      margin-right: 0.34rem;
+    }
+
+    .integration-list {
+      margin: 0.72rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      gap: 0.36rem;
+      flex-wrap: wrap;
+    }
+
+    .integration-pill {
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: #3d2e99;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.24rem 0.55rem;
+      letter-spacing: 0.01em;
+    }
+
+    .terminal {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: #fcfcff;
+      overflow: hidden;
+    }
+
+    .terminal-head {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-bottom: 1px solid var(--line);
+      padding: 0.45rem 0.58rem;
+      font-size: 0.73rem;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .terminal-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .terminal-dot.pink { background: #ff7ca7; }
+    .terminal-dot.gold { background: #ffb85b; }
+    .terminal-dot.blue { background: #62b2ff; }
+
+    .terminal pre {
+      margin: 0;
+      padding: 0.74rem 0.7rem;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.62;
+      color: #1f2a63;
+      background: linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
+    }
+
+    .command-line {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .command-line::before {
+      content: "$ ";
+      color: #6071c0;
+      font-weight: 700;
     }
 
     .section {
@@ -421,9 +553,15 @@
     .delay-2 { animation-delay: 0.12s; }
     .delay-3 { animation-delay: 0.18s; }
     .delay-4 { animation-delay: 0.24s; }
+    .delay-5 { animation-delay: 0.3s; }
+    .delay-6 { animation-delay: 0.36s; }
 
     @media (max-width: 1000px) {
       .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .quickstart {
         grid-template-columns: 1fr;
       }
 
@@ -455,6 +593,23 @@
       .callout {
         padding: 0.9rem;
       }
+
+      .terminal pre {
+        font-size: 0.78rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal {
+        opacity: 1;
+        animation: none;
+      }
+
+      .feature-card,
+      .post-card,
+      .btn {
+        transition: none;
+      }
     }
   </style>
 </head>
@@ -466,9 +621,10 @@
         <span class="brand-text">Astro Starter</span>
       </a>
       <nav class="nav-links" aria-label="Main Navigation">
+        <a href="#quickstart">Quick Start</a>
         <a href="#features">Features</a>
         <a href="#posts">Posts</a>
-        <a href="#guides">Guides</a>
+        <a href="#resources">Resources</a>
         <a class="cta-link" href="#launch">Get Started</a>
       </nav>
     </header>
@@ -507,7 +663,38 @@
       </aside>
     </section>
 
-    <section id="features" class="section reveal delay-2">
+    <section id="quickstart" class="quickstart reveal delay-2">
+      <div>
+        <h2>Quick Start In 3 Steps</h2>
+        <p>A practical setup path that mirrors common Astro onboarding flow for new projects.</p>
+        <ol class="steps">
+          <li><strong>Step 1</strong>Create a new project using the official starter wizard.</li>
+          <li><strong>Step 2</strong>Run the local dev server and shape your page layout and components.</li>
+          <li><strong>Step 3</strong>Move markdown into content collections and publish with your preferred host.</li>
+        </ol>
+        <ul class="integration-list" aria-label="Popular Integrations">
+          <li class="integration-pill">React</li>
+          <li class="integration-pill">Vue</li>
+          <li class="integration-pill">Svelte</li>
+          <li class="integration-pill">Tailwind</li>
+          <li class="integration-pill">MDX</li>
+        </ul>
+      </div>
+      <div class="terminal" role="region" aria-label="Astro CLI Commands">
+        <div class="terminal-head">
+          <span class="terminal-dot pink" aria-hidden="true"></span>
+          <span class="terminal-dot gold" aria-hidden="true"></span>
+          <span class="terminal-dot blue" aria-hidden="true"></span>
+          Astro CLI
+        </div>
+        <pre><code><span class="command-line">npm create astro@latest</span>
+<span class="command-line">cd my-astro-site</span>
+<span class="command-line">npm run dev</span>
+<span class="command-line">npm run build</span></code></pre>
+      </div>
+    </section>
+
+    <section id="features" class="section reveal delay-3">
       <div class="section-head">
         <h2>Why This Layout Works</h2>
         <p>Structured the way Astro projects usually scale: hero, capability blocks, and content preview cards.</p>
@@ -528,7 +715,7 @@
       </div>
     </section>
 
-    <section id="posts" class="section reveal delay-3">
+    <section id="posts" class="section reveal delay-4">
       <div class="section-head">
         <h2>Latest Posts</h2>
         <p>Placeholder post entries to match a typical Astro blog homepage section.</p>
@@ -537,30 +724,53 @@
         <article class="post-card">
           <h3>Designing A Content-First Homepage</h3>
           <p>How to organize hero, features, and post previews so readers scan quickly and stay oriented.</p>
-          <span class="post-meta">Guide • 6 min read</span>
+          <span class="post-meta">Guide - 6 min read</span>
         </article>
         <article class="post-card">
           <h3>Astro Project Structure That Scales</h3>
           <p>Split pages, components, and content collections with clear boundaries for long-term maintenance.</p>
-          <span class="post-meta">Architecture • 8 min read</span>
+          <span class="post-meta">Architecture - 8 min read</span>
         </article>
         <article class="post-card">
           <h3>Polished Motion Without Heavy JS</h3>
           <p>Use lightweight CSS reveal effects to improve perceived quality while keeping performance high.</p>
-          <span class="post-meta">UI Motion • 5 min read</span>
+          <span class="post-meta">UI Motion - 5 min read</span>
         </article>
       </div>
     </section>
 
-    <section id="launch" class="callout reveal delay-4">
+    <section id="resources" class="section reveal delay-5">
+      <div class="section-head">
+        <h2>Core Resources</h2>
+        <p>Keep these links in your starter homepage while your real content is still being written.</p>
+      </div>
+      <div class="grid">
+        <article class="feature-card">
+          <h3>Official Docs</h3>
+          <p>Concepts, API references, and deployment instructions from the Astro documentation site.</p>
+          <span class="post-meta">docs.astro.build</span>
+        </article>
+        <article class="feature-card">
+          <h3>Theme Gallery</h3>
+          <p>Browse production-ready themes and adapt their structure, typography, and page composition.</p>
+          <span class="post-meta">astro.build/themes</span>
+        </article>
+        <article class="feature-card">
+          <h3>Integrations</h3>
+          <p>Add React, Vue, Svelte, Tailwind, and other tools from Astro's integration ecosystem.</p>
+          <span class="post-meta">astro.build/integrations</span>
+        </article>
+      </div>
+    </section>
+    <section id="launch" class="callout reveal delay-6">
       <div>
         <h2>Ready To Turn This Into A Real Astro Project?</h2>
         <p>Current page is pure HTML/CSS and already styled. Next step is migrating sections into Astro components and wiring markdown posts.</p>
       </div>
-      <a class="btn primary" href="#guides">Open Setup Guide</a>
+      <a class="btn primary" href="#quickstart">Open Setup Guide</a>
     </section>
 
-    <footer id="guides" class="footer">
+    <footer class="footer">
       <span>&copy; 2026 Astro-Style Starter</span>
       <span><a href="https://github.com/withastro/astro" target="_blank" rel="noreferrer">Reference: withastro/astro</a></span>
     </footer>

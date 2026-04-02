@@ -3,46 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SugarAbsinthe | Notes Timeline</title>
-  <meta name="description" content="Minimal learning notes timeline with add/edit/delete and multi-device GitHub sync.">
+  <title>Astro-Style Blog Starter</title>
+  <meta name="description" content="A light Astro-style blog homepage with content-first structure and modern visual system.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-0: #050815;
-      --bg-1: #0b132d;
-      --bg-2: #142044;
-      --surface: rgba(12, 18, 41, 0.84);
-      --surface-strong: rgba(10, 15, 34, 0.95);
-      --text: #ecf3ff;
-      --muted: #b8c9ed;
-      --line: rgba(132, 161, 226, 0.42);
-      --line-strong: rgba(162, 190, 255, 0.78);
-      --accent: #8bd7ff;
-      --accent-strong: #43b9ff;
-      --warm: #ffba6b;
-      --danger: #ff88a7;
-      --success: #80fbc2;
-      --max-width: 1080px;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --shadow: 0 16px 40px rgba(0, 0, 0, 0.34);
+      --bg: #f9f7ff;
+      --bg-soft: #f2f7ff;
+      --card: #ffffff;
+      --text: #181a2a;
+      --muted: #5a607f;
+      --line: #d9ddf2;
+      --line-strong: #bfc7ec;
+      --primary: #6c4dff;
+      --primary-soft: #ece8ff;
+      --accent: #0da0ff;
+      --warm: #ff9f5a;
+      --radius-lg: 22px;
+      --radius-md: 14px;
+      --max-width: 1120px;
+      --shadow: 0 20px 48px rgba(44, 53, 115, 0.14);
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Outfit", sans-serif;
       color: var(--text);
-      font-family: "Plus Jakarta Sans", sans-serif;
       background:
-        radial-gradient(48rem 32rem at -6% -12%, rgba(67, 185, 255, 0.22), transparent 60%),
-        radial-gradient(36rem 28rem at 106% -2%, rgba(255, 186, 107, 0.16), transparent 66%),
-        linear-gradient(165deg, var(--bg-0) 0%, var(--bg-1) 56%, var(--bg-2) 100%);
-      position: relative;
+        radial-gradient(44rem 26rem at -10% -10%, rgba(13, 160, 255, 0.17), transparent 62%),
+        radial-gradient(34rem 20rem at 105% -12%, rgba(255, 159, 90, 0.18), transparent 60%),
+        linear-gradient(180deg, #fefeff 0%, var(--bg) 58%, var(--bg-soft) 100%);
       overflow-x: hidden;
     }
 
@@ -50,96 +51,104 @@
       content: "";
       position: fixed;
       inset: 0;
-      background-image:
-        linear-gradient(rgba(172, 198, 255, 0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(172, 198, 255, 0.08) 1px, transparent 1px);
-      background-size: 40px 40px;
-      mask-image: radial-gradient(circle at center, black 24%, transparent 82%);
       pointer-events: none;
-      z-index: 0;
+      z-index: -1;
+      background-image:
+        linear-gradient(rgba(132, 147, 214, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(132, 147, 214, 0.08) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, black 26%, transparent 84%);
     }
 
     .page {
       width: min(var(--max-width), 92vw);
       margin: 0 auto;
-      padding: 1.25rem 0 3rem;
-      position: relative;
-      z-index: 1;
+      padding: 1.3rem 0 3rem;
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.9rem;
+      gap: 1rem;
       border: 1px solid var(--line);
       border-radius: 999px;
-      padding: 0.5rem 0.6rem;
-      background: rgba(8, 13, 32, 0.66);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-      margin-bottom: 1rem;
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(8px);
+      padding: 0.48rem 0.6rem;
+      box-shadow: 0 10px 24px rgba(69, 80, 149, 0.1);
     }
 
     .brand {
-      text-decoration: none;
-      color: var(--text);
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 1.02rem;
-      font-weight: 700;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--text);
+      padding: 0.2rem 0.45rem;
       border-radius: 999px;
-      padding: 0.25rem 0.55rem;
-      transition: background-color 0.18s ease;
+      font-weight: 700;
+      letter-spacing: 0.01em;
     }
 
-    .brand::before {
-      content: "";
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, #fff 0%, var(--warm) 40%, #ff9052 100%);
-      box-shadow: 0 0 18px rgba(255, 186, 107, 0.65);
+    .brand-mark {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      box-shadow: 0 8px 16px rgba(108, 77, 255, 0.25);
+      display: inline-block;
     }
 
-    .brand:hover {
-      background: rgba(139, 215, 255, 0.12);
+    .brand-text {
+      font-family: "Newsreader", serif;
+      font-size: 1.16rem;
     }
 
-    .top-links {
+    .nav-links {
       display: flex;
+      align-items: center;
+      gap: 0.4rem;
       flex-wrap: wrap;
-      gap: 0.42rem;
       justify-content: flex-end;
     }
 
-    .top-links a {
+    .nav-links a {
       text-decoration: none;
       color: var(--muted);
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      padding: 0.42rem 0.76rem;
-      border: 1px solid transparent;
+      font-size: 0.84rem;
+      font-weight: 600;
       border-radius: 999px;
-      transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
+      border: 1px solid transparent;
+      padding: 0.42rem 0.74rem;
+      transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
     }
 
-    .top-links a:hover {
+    .nav-links a:hover {
       color: var(--text);
-      border-color: var(--line);
-      background: rgba(139, 215, 255, 0.1);
+      border-color: var(--line-strong);
+      background: #fff;
+    }
+
+    .nav-links .cta-link {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(120deg, var(--primary) 0%, #5f8bff 100%);
+      box-shadow: 0 8px 20px rgba(108, 77, 255, 0.26);
     }
 
     .hero {
-      border: 1px solid var(--line-strong);
+      margin-top: 1rem;
+      border: 1px solid var(--line);
       border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
       background:
-        linear-gradient(123deg, rgba(16, 24, 54, 0.95) 0%, rgba(11, 18, 40, 0.86) 56%, rgba(42, 30, 17, 0.54) 100%);
-      padding: 1.2rem 1.2rem 1.1rem;
+        linear-gradient(128deg, #ffffff 0%, #f8f8ff 60%, #f3f8ff 100%);
+      box-shadow: var(--shadow);
+      padding: clamp(1.1rem, 2.5vw, 2rem);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 1rem;
       position: relative;
       overflow: hidden;
     }
@@ -147,1060 +156,414 @@
     .hero::after {
       content: "";
       position: absolute;
-      width: 320px;
-      height: 320px;
-      right: -110px;
-      top: -150px;
+      width: 280px;
+      height: 280px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 186, 107, 0.32) 0%, rgba(255, 186, 107, 0) 70%);
+      right: -100px;
+      top: -150px;
+      background: radial-gradient(circle, rgba(108, 77, 255, 0.12) 0%, rgba(108, 77, 255, 0) 70%);
       pointer-events: none;
     }
 
-    .hero-kicker {
+    .eyebrow {
       margin: 0;
-      color: var(--accent);
-      font-size: 0.77rem;
-      font-weight: 700;
-      letter-spacing: 0.16em;
+      color: var(--primary);
+      font-size: 0.78rem;
       text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 700;
     }
 
-    .hero h1 {
-      margin: 0.56rem 0 0;
-      font-family: "Space Grotesk", sans-serif;
-      font-size: clamp(1.7rem, 4.2vw, 2.6rem);
-      line-height: 1.1;
+    h1 {
+      margin: 0.52rem 0 0;
+      font-family: "Newsreader", serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1.02;
       letter-spacing: -0.02em;
-      max-width: 18ch;
+      max-width: 16ch;
     }
 
-    .hero p {
-      margin: 0.58rem 0 0;
+    .hero-copy p {
+      margin: 0.88rem 0 0;
       color: var(--muted);
       line-height: 1.68;
-      max-width: 68ch;
+      max-width: 60ch;
       font-size: 0.95rem;
     }
 
-    .hero-meta {
-      margin-top: 0.82rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(10, 16, 36, 0.72);
-      padding: 0.35rem 0.64rem;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-
-    .hero-meta strong {
-      color: var(--text);
-      font-size: 0.9rem;
-      letter-spacing: 0.02em;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(290px, 1fr) minmax(0, 1.28fr);
-      gap: 0.8rem;
-      margin-top: 0.92rem;
-      align-items: start;
-    }
-
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      padding: 0.9rem;
-      backdrop-filter: blur(8px);
-    }
-
-    .panel h2 {
-      margin: 0;
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 1.02rem;
-      letter-spacing: 0.01em;
-    }
-
-    .panel-subtitle {
-      margin: 0.4rem 0 0.76rem;
-      color: var(--muted);
-      font-size: 0.86rem;
-      line-height: 1.58;
-    }
-
-    .form-grid {
-      display: grid;
-      gap: 0.58rem;
-    }
-
-    .field {
-      display: grid;
-      gap: 0.31rem;
-    }
-
-    .field label {
-      color: #d4e1ff;
-      font-size: 0.74rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .input,
-    .textarea {
-      width: 100%;
-      border: 1px solid rgba(132, 161, 226, 0.6);
-      border-radius: 10px;
-      font: inherit;
-      color: var(--text);
-      background: rgba(5, 10, 27, 0.78);
-      padding: 0.5rem 0.6rem;
-      font-size: 0.9rem;
-      transition: border-color 0.16s ease, box-shadow 0.16s ease;
-    }
-
-    .input::placeholder,
-    .textarea::placeholder {
-      color: rgba(184, 201, 237, 0.56);
-    }
-
-    .textarea {
-      min-height: 95px;
-      resize: vertical;
-      line-height: 1.52;
-    }
-
-    .input:focus,
-    .textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(139, 215, 255, 0.24);
-    }
-
-    .action-row {
+    .hero-actions {
+      margin-top: 1rem;
       display: flex;
+      gap: 0.55rem;
       flex-wrap: wrap;
-      gap: 0.45rem;
-      margin-top: 0.12rem;
     }
 
     .btn {
-      border: 1px solid rgba(132, 161, 226, 0.6);
-      border-radius: 10px;
-      background: rgba(132, 161, 226, 0.12);
-      color: var(--text);
-      font-size: 0.83rem;
-      font-weight: 700;
-      padding: 0.42rem 0.66rem;
-      line-height: 1.2;
-      cursor: pointer;
-      transition: background-color 0.16s ease, transform 0.16s ease, border-color 0.16s ease;
-    }
-
-    .btn:hover:not([disabled]) {
-      transform: translateY(-1px);
-      border-color: var(--line-strong);
-      background: rgba(139, 215, 255, 0.18);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      border-color: transparent;
-      background: linear-gradient(120deg, var(--accent) 0%, var(--accent-strong) 100%);
-      color: #031227;
-    }
-
-    .btn-primary:hover:not([disabled]) {
-      border-color: transparent;
-      background: linear-gradient(120deg, #a5e2ff 0%, #59c4ff 100%);
-    }
-
-    .btn-danger {
-      border-color: rgba(255, 136, 167, 0.65);
-      color: #ffd8e2;
-      background: rgba(255, 136, 167, 0.14);
-    }
-
-    .btn-danger:hover:not([disabled]) {
-      border-color: rgba(255, 162, 186, 0.9);
-      color: #ffeaf0;
-      background: rgba(255, 136, 167, 0.24);
-    }
-
-    .sync-box {
-      margin-top: 0.72rem;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      padding: 0.74rem;
-      background: rgba(8, 13, 31, 0.62);
-    }
-
-    .sync-head {
-      margin: 0;
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    .sync-desc {
-      margin: 0.28rem 0 0.56rem;
-      color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.52;
-    }
-
-    .sync-desc code {
-      background: rgba(66, 185, 255, 0.16);
-      border: 1px solid rgba(132, 161, 226, 0.6);
-      border-radius: 8px;
-      padding: 0.04rem 0.3rem;
-      color: #e0f5ff;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-
-    .checkbox-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.74rem;
-      margin-top: 0.2rem;
-      color: var(--muted);
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .checkbox-row label {
+      text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 0.34rem;
-      user-select: none;
-      cursor: pointer;
+      justify-content: center;
+      gap: 0.35rem;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      font-size: 0.86rem;
+      font-weight: 700;
+      padding: 0.56rem 0.9rem;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     }
 
-    .checkbox-row input {
-      accent-color: var(--accent-strong);
+    .btn.primary {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(120deg, var(--primary) 0%, #5f8bff 100%);
+      box-shadow: 0 8px 18px rgba(108, 77, 255, 0.28);
     }
 
-    .status {
-      margin: 0.58rem 0 0;
-      font-size: 0.82rem;
-      line-height: 1.52;
-      color: var(--muted);
-      min-height: 1.3em;
+    .btn.secondary {
+      color: var(--text);
+      background: #fff;
     }
 
-    .status.success {
-      color: var(--success);
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(69, 80, 149, 0.18);
     }
 
-    .status.error {
-      color: var(--danger);
+    .hero-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: #fff;
+      padding: 0.9rem;
+      align-self: center;
     }
 
-    .timeline {
-      margin: 0.25rem 0 0;
-      padding: 0;
+    .hero-panel h2 {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+    }
+
+    .stack {
       list-style: none;
+      margin: 0.72rem 0 0;
+      padding: 0;
       display: grid;
+      gap: 0.52rem;
+    }
+
+    .stack li {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(122deg, #ffffff 0%, #f6f7ff 100%);
+      padding: 0.56rem 0.62rem;
+    }
+
+    .stack strong {
+      display: block;
+      font-size: 0.84rem;
+      margin-bottom: 0.16rem;
+    }
+
+    .stack span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .section {
+      margin-top: 0.95rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.8);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: "Newsreader", serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      max-width: 58ch;
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 0.6rem;
     }
 
-    .note-item {
-      margin: 0;
+    .feature-card,
+    .post-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      padding: 0.76rem;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .note-card {
-      border: 1px solid rgba(132, 161, 226, 0.56);
-      border-radius: 12px;
-      background: linear-gradient(156deg, rgba(14, 22, 49, 0.96) 0%, rgba(9, 15, 35, 0.88) 100%);
-      padding: 0.76rem 0.8rem;
-      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
-    }
-
-    .note-card:hover {
-      transform: translateY(-1px);
+    .feature-card:hover,
+    .post-card:hover {
+      transform: translateY(-2px);
       border-color: var(--line-strong);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 14px 28px rgba(69, 80, 149, 0.14);
     }
 
-    .note-head {
+    .feature-card h3,
+    .post-card h3 {
+      margin: 0;
+      font-size: 0.96rem;
+      line-height: 1.3;
+    }
+
+    .feature-card p,
+    .post-card p {
+      margin: 0.44rem 0 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.56;
+    }
+
+    .post-meta {
+      margin-top: 0.56rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.32rem;
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .callout {
+      margin-top: 0.95rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(126deg, #ffffff 0%, #f2ecff 58%, #eef7ff 100%);
+      box-shadow: var(--shadow);
+      padding: 1.08rem;
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      gap: 0.5rem;
+      align-items: center;
+      gap: 0.8rem;
       flex-wrap: wrap;
     }
 
-    .note-title {
+    .callout h2 {
       margin: 0;
-      font-size: 0.98rem;
-      font-weight: 700;
-      line-height: 1.34;
+      font-family: "Newsreader", serif;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      letter-spacing: -0.01em;
     }
 
-    .note-date {
-      margin: 0;
-      color: var(--accent);
-      font-size: 0.77rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .note-summary {
-      margin: 0.46rem 0 0;
+    .callout p {
+      margin: 0.45rem 0 0;
       color: var(--muted);
+      font-size: 0.88rem;
       line-height: 1.56;
-      font-size: 0.88rem;
-      white-space: pre-wrap;
-    }
-
-    .note-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.34rem;
-      margin-top: 0.5rem;
-    }
-
-    .note-tag {
-      border: 1px solid rgba(139, 215, 255, 0.5);
-      border-radius: 999px;
-      background: rgba(139, 215, 255, 0.14);
-      font-size: 0.7rem;
-      color: #def4ff;
-      padding: 0.13rem 0.42rem;
-    }
-
-    .note-link {
-      display: inline-block;
-      margin-top: 0.52rem;
-      color: #b4e8ff;
-      text-decoration: none;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
-    .note-link:hover {
-      text-decoration: underline;
-    }
-
-    .note-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.36rem;
-      margin-top: 0.58rem;
-    }
-
-    .empty-box {
-      border: 1px dashed rgba(132, 161, 226, 0.64);
-      border-radius: 12px;
-      background: rgba(8, 13, 31, 0.64);
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.58;
-      padding: 0.76rem;
+      max-width: 62ch;
     }
 
     .footer {
-      margin-top: 0.96rem;
+      margin-top: 0.95rem;
       border-top: 1px solid var(--line);
-      padding-top: 0.74rem;
-      color: var(--muted);
-      font-size: 0.82rem;
+      padding-top: 0.76rem;
       display: flex;
       justify-content: space-between;
-      flex-wrap: wrap;
       gap: 0.5rem;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.8rem;
     }
 
     .footer a {
-      color: #bdeaff;
+      color: var(--primary);
       text-decoration: none;
       font-weight: 700;
     }
 
-    .footer a:hover {
-      text-decoration: underline;
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    @media (max-width: 900px) {
-      .layout {
+    .reveal {
+      opacity: 0;
+      animation: rise 0.62s ease forwards;
+    }
+
+    .delay-1 { animation-delay: 0.06s; }
+    .delay-2 { animation-delay: 0.12s; }
+    .delay-3 { animation-delay: 0.18s; }
+    .delay-4 { animation-delay: 0.24s; }
+
+    @media (max-width: 1000px) {
+      .hero {
         grid-template-columns: 1fr;
       }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
-    @media (max-width: 640px) {
-      .page {
-        padding-top: 1rem;
-      }
-
+    @media (max-width: 760px) {
       .topbar {
-        flex-direction: column;
-        align-items: flex-start;
         border-radius: 18px;
+        align-items: flex-start;
+        flex-direction: column;
       }
 
-      .top-links {
+      .nav-links {
         width: 100%;
         justify-content: flex-start;
       }
 
-      .hero {
-        padding: 1rem;
+      .section {
+        padding: 0.84rem;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .callout {
+        padding: 0.9rem;
       }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <header class="topbar">
-      <a class="brand" href="/">SugarAbsinthe</a>
-      <nav class="top-links" aria-label="Main Navigation">
-        <a href="#editor">Studio</a>
-        <a href="#timeline">Timeline</a>
-        <a href="https://github.com/SugarAbsinthe" target="_blank" rel="noreferrer">GitHub</a>
+    <header class="topbar reveal">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">Astro Starter</span>
+      </a>
+      <nav class="nav-links" aria-label="Main Navigation">
+        <a href="#features">Features</a>
+        <a href="#posts">Posts</a>
+        <a href="#guides">Guides</a>
+        <a class="cta-link" href="#launch">Get Started</a>
       </nav>
     </header>
 
-    <section class="hero">
-      <p class="hero-kicker">Personal Blog</p>
-      <h1>Astro-Inspired Notes Timeline</h1>
-      <p>Capture ideas quickly, keep your writing focused, and ship notes with a clean content-first workflow.</p>
-      <p>Use GitHub sync so every device reads and writes the same timeline file.</p>
-      <p class="hero-meta">Published Notes <strong id="notes-count">0</strong></p>
+    <section class="hero reveal delay-1">
+      <div class="hero-copy">
+        <p class="eyebrow">Content First Framework</p>
+        <h1>Build Fast, Content-Rich Sites with Astro</h1>
+        <p>
+          A clean baseline inspired by Astro's product style: strong typography,
+          bright surfaces, and component-driven sections for blogs, docs, and
+          personal websites.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#posts">Explore Posts</a>
+          <a class="btn secondary" href="#features">View Features</a>
+        </div>
+      </div>
+
+      <aside class="hero-panel">
+        <h2>Starter Stack</h2>
+        <ul class="stack">
+          <li>
+            <strong>Content Collections</strong>
+            <span>Type-safe markdown content for posts and docs.</span>
+          </li>
+          <li>
+            <strong>Island Architecture</strong>
+            <span>Ship less JavaScript by hydrating only interactive parts.</span>
+          </li>
+          <li>
+            <strong>Framework Freedom</strong>
+            <span>Mix React, Vue, Svelte, and plain HTML in one project.</span>
+          </li>
+        </ul>
+      </aside>
     </section>
 
-    <div class="layout">
-      <section id="editor" class="panel">
-        <h2 id="form-title">Create A Note</h2>
-        <p class="panel-subtitle">Date and title are required. Tags use comma separation.</p>
+    <section id="features" class="section reveal delay-2">
+      <div class="section-head">
+        <h2>Why This Layout Works</h2>
+        <p>Structured the way Astro projects usually scale: hero, capability blocks, and content preview cards.</p>
+      </div>
+      <div class="grid">
+        <article class="feature-card">
+          <h3>Readable Typography</h3>
+          <p>Newsreader for headlines and Outfit for interface text keeps content editorial while UI stays crisp.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Light Visual System</h3>
+          <p>Soft gradients and subtle grid texture create depth without dark-theme dependence.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Responsive Composition</h3>
+          <p>Desktop shows two-column hero and card grids, while mobile collapses to single-column reading flow.</p>
+        </article>
+      </div>
+    </section>
 
-        <form id="note-form" class="form-grid">
-          <div class="field">
-            <label for="note-date">Date</label>
-            <input id="note-date" class="input" type="date" required>
-          </div>
+    <section id="posts" class="section reveal delay-3">
+      <div class="section-head">
+        <h2>Latest Posts</h2>
+        <p>Placeholder post entries to match a typical Astro blog homepage section.</p>
+      </div>
+      <div class="grid">
+        <article class="post-card">
+          <h3>Designing A Content-First Homepage</h3>
+          <p>How to organize hero, features, and post previews so readers scan quickly and stay oriented.</p>
+          <span class="post-meta">Guide • 6 min read</span>
+        </article>
+        <article class="post-card">
+          <h3>Astro Project Structure That Scales</h3>
+          <p>Split pages, components, and content collections with clear boundaries for long-term maintenance.</p>
+          <span class="post-meta">Architecture • 8 min read</span>
+        </article>
+        <article class="post-card">
+          <h3>Polished Motion Without Heavy JS</h3>
+          <p>Use lightweight CSS reveal effects to improve perceived quality while keeping performance high.</p>
+          <span class="post-meta">UI Motion • 5 min read</span>
+        </article>
+      </div>
+    </section>
 
-          <div class="field">
-            <label for="note-title">Title</label>
-            <input id="note-title" class="input" type="text" maxlength="120" required>
-          </div>
+    <section id="launch" class="callout reveal delay-4">
+      <div>
+        <h2>Ready To Turn This Into A Real Astro Project?</h2>
+        <p>Current page is pure HTML/CSS and already styled. Next step is migrating sections into Astro components and wiring markdown posts.</p>
+      </div>
+      <a class="btn primary" href="#guides">Open Setup Guide</a>
+    </section>
 
-          <div class="field">
-            <label for="note-summary">Summary</label>
-            <textarea id="note-summary" class="textarea" maxlength="1000" placeholder="What did you learn?"></textarea>
-          </div>
-
-          <div class="field">
-            <label for="note-tags">Tags</label>
-            <input id="note-tags" class="input" type="text" placeholder="JavaScript, DOM, Async">
-          </div>
-
-          <div class="field">
-            <label for="note-url">Reference URL (optional)</label>
-            <input id="note-url" class="input" type="url" placeholder="https://...">
-          </div>
-
-          <div class="action-row">
-            <button id="save-btn" class="btn btn-primary" type="submit">Save Note</button>
-            <button id="cancel-btn" class="btn" type="button" hidden>Cancel Edit</button>
-            <button id="clear-btn" class="btn btn-danger" type="button">Delete All</button>
-          </div>
-        </form>
-
-        <div class="sync-box">
-          <p class="sync-head">Cloud Sync (GitHub)</p>
-          <p class="sync-desc">Write target: <code>SugarAbsinthe/sugarabsinthe.github.io</code> -> <code>notes-data.js</code> on <code>main</code>.</p>
-
-          <div class="field">
-            <label for="token-input">GitHub Fine-Grained Token (contents: read/write)</label>
-            <input id="token-input" class="input" type="password" placeholder="github_pat_...">
-          </div>
-
-          <div class="checkbox-row">
-            <label><input id="remember-token" type="checkbox"> Remember token on this device</label>
-            <label><input id="auto-push" type="checkbox"> Auto push after save/delete</label>
-          </div>
-
-          <div class="action-row" style="margin-top: 0.55rem;">
-            <button id="pull-btn" class="btn" type="button">Pull From GitHub</button>
-            <button id="push-btn" class="btn btn-primary" type="button">Push To GitHub</button>
-          </div>
-
-          <p id="sync-status" class="status">Ready. Local data is editable now.</p>
-        </div>
-      </section>
-
-      <section id="timeline" class="panel">
-        <h2>Timeline</h2>
-        <p class="panel-subtitle">Notes are sorted by date descending.</p>
-        <ul id="timeline-list" class="timeline"></ul>
-        <div id="timeline-empty" class="empty-box" hidden>No notes yet. Add your first note from the studio panel.</div>
-      </section>
-    </div>
-
-    <footer class="footer">
-      <span>&copy; 2026 SugarAbsinthe</span>
-      <span><a href="mailto:876093364@qq.com">876093364@qq.com</a></span>
+    <footer id="guides" class="footer">
+      <span>&copy; 2026 Astro-Style Starter</span>
+      <span><a href="https://github.com/withastro/astro" target="_blank" rel="noreferrer">Reference: withastro/astro</a></span>
     </footer>
   </div>
-
-  <script src="notes-data.js"></script>
-  <script>
-    (() => {
-      const CONFIG = {
-        owner: "SugarAbsinthe",
-        repo: "sugarabsinthe.github.io",
-        branch: "main",
-        path: "notes-data.js",
-        notesKey: "sugarabsinthe_notes_v3",
-        tokenKey: "sugarabsinthe_github_pat_v1",
-        autoPushKey: "sugarabsinthe_auto_push_v1"
-      };
-
-      const state = {
-        notes: [],
-        editingId: null,
-        syncing: false
-      };
-
-      const el = {
-        noteForm: document.getElementById("note-form"),
-        formTitle: document.getElementById("form-title"),
-        saveBtn: document.getElementById("save-btn"),
-        cancelBtn: document.getElementById("cancel-btn"),
-        clearBtn: document.getElementById("clear-btn"),
-        timelineList: document.getElementById("timeline-list"),
-        timelineEmpty: document.getElementById("timeline-empty"),
-        dateInput: document.getElementById("note-date"),
-        titleInput: document.getElementById("note-title"),
-        summaryInput: document.getElementById("note-summary"),
-        tagsInput: document.getElementById("note-tags"),
-        urlInput: document.getElementById("note-url"),
-        tokenInput: document.getElementById("token-input"),
-        rememberToken: document.getElementById("remember-token"),
-        autoPush: document.getElementById("auto-push"),
-        pullBtn: document.getElementById("pull-btn"),
-        pushBtn: document.getElementById("push-btn"),
-        syncStatus: document.getElementById("sync-status"),
-        notesCount: document.getElementById("notes-count")
-      };
-
-      const today = new Date().toISOString().slice(0, 10);
-      init();
-
-      function init() {
-        loadSyncSettings();
-        const localNotes = loadLocalNotes();
-
-        if (localNotes.length > 0) {
-          state.notes = localNotes;
-        } else {
-          const defaults = sanitizeNotes(window.learningNotes || []);
-          state.notes = defaults.map((item) => ({
-            ...item,
-            id: item.id || createId(),
-            createdAt: item.createdAt || new Date().toISOString()
-          }));
-          persistLocalNotes();
-        }
-
-        bindEvents();
-        renderNotes();
-        resetForm();
-
-        pullFromGitHub({ silent: true });
-      }
-
-      function bindEvents() {
-        el.noteForm.addEventListener("submit", onSubmit);
-        el.cancelBtn.addEventListener("click", resetForm);
-        el.clearBtn.addEventListener("click", onClearAll);
-        el.pullBtn.addEventListener("click", () => pullFromGitHub({ silent: false }));
-        el.pushBtn.addEventListener("click", () => pushToGitHub({ silent: false }));
-
-        el.timelineList.addEventListener("click", (event) => {
-          const editBtn = event.target.closest("[data-action='edit']");
-          const deleteBtn = event.target.closest("[data-action='delete']");
-
-          if (editBtn) {
-            startEdit(editBtn.dataset.id || "");
-            return;
-          }
-
-          if (deleteBtn) {
-            deleteNote(deleteBtn.dataset.id || "");
-          }
-        });
-
-        el.rememberToken.addEventListener("change", persistSyncSettings);
-        el.autoPush.addEventListener("change", persistSyncSettings);
-      }
-
-      function onSubmit(event) {
-        event.preventDefault();
-        const payload = getFormPayload();
-        if (!payload) return;
-
-        if (state.editingId) {
-          state.notes = state.notes.map((item) => (item.id === state.editingId ? { ...item, ...payload } : item));
-          setStatus("Note updated locally.", "info");
-        } else {
-          state.notes.push({
-            id: createId(),
-            createdAt: new Date().toISOString(),
-            ...payload
-          });
-          setStatus("Note added locally.", "info");
-        }
-
-        persistLocalNotes();
-        renderNotes();
-        resetForm();
-        maybeAutoPush();
-      }
-
-      function onClearAll() {
-        if (!state.notes.length) return;
-        if (!window.confirm("Delete all notes?")) return;
-
-        state.notes = [];
-        persistLocalNotes();
-        renderNotes();
-        resetForm();
-        setStatus("All notes deleted locally.", "info");
-        maybeAutoPush();
-      }
-
-      function deleteNote(id) {
-        const exists = state.notes.some((item) => item.id === id);
-        if (!exists) return;
-        if (!window.confirm("Delete this note?")) return;
-
-        state.notes = state.notes.filter((item) => item.id !== id);
-        persistLocalNotes();
-        renderNotes();
-        if (state.editingId === id) resetForm();
-        setStatus("Note deleted locally.", "info");
-        maybeAutoPush();
-      }
-
-      function startEdit(id) {
-        const target = state.notes.find((item) => item.id === id);
-        if (!target) return;
-
-        state.editingId = id;
-        el.formTitle.textContent = "Edit Note";
-        el.saveBtn.textContent = "Update Note";
-        el.cancelBtn.hidden = false;
-
-        el.dateInput.value = target.date || today;
-        el.titleInput.value = target.title || "";
-        el.summaryInput.value = target.summary || "";
-        el.tagsInput.value = Array.isArray(target.tags) ? target.tags.join(", ") : "";
-        el.urlInput.value = target.url || "";
-        el.noteForm.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-
-      function resetForm() {
-        state.editingId = null;
-        el.formTitle.textContent = "Create A Note";
-        el.saveBtn.textContent = "Save Note";
-        el.cancelBtn.hidden = true;
-        el.noteForm.reset();
-        el.dateInput.value = today;
-      }
-
-      function getFormPayload() {
-        const date = el.dateInput.value.trim();
-        const title = el.titleInput.value.trim();
-        const summary = el.summaryInput.value.trim();
-        const tags = el.tagsInput.value
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean);
-        const url = el.urlInput.value.trim();
-
-        if (!date || !title) {
-          window.alert("Date and title are required.");
-          return null;
-        }
-
-        if (url && !isValidHttpUrl(url)) {
-          window.alert("Reference URL must start with http:// or https://");
-          return null;
-        }
-
-        return { date, title, summary, tags, url };
-      }
-
-      function renderNotes() {
-        el.timelineList.innerHTML = "";
-        const sorted = state.notes.slice().sort(sortByDateDesc);
-        if (el.notesCount) el.notesCount.textContent = String(sorted.length);
-
-        if (!sorted.length) {
-          el.timelineEmpty.hidden = false;
-          return;
-        }
-
-        el.timelineEmpty.hidden = true;
-        const frag = document.createDocumentFragment();
-
-        sorted.forEach((note) => {
-          const item = document.createElement("li");
-          item.className = "note-item";
-
-          const card = document.createElement("article");
-          card.className = "note-card";
-
-          const head = document.createElement("div");
-          head.className = "note-head";
-
-          const title = document.createElement("h3");
-          title.className = "note-title";
-          title.textContent = note.title || "Untitled";
-
-          const date = document.createElement("p");
-          date.className = "note-date";
-          date.textContent = note.date || "No date";
-
-          head.appendChild(title);
-          head.appendChild(date);
-          card.appendChild(head);
-
-          if (note.summary) {
-            const summary = document.createElement("p");
-            summary.className = "note-summary";
-            summary.textContent = note.summary;
-            card.appendChild(summary);
-          }
-
-          if (Array.isArray(note.tags) && note.tags.length) {
-            const tags = document.createElement("div");
-            tags.className = "note-tags";
-            note.tags.forEach((tagText) => {
-              const tag = document.createElement("span");
-              tag.className = "note-tag";
-              tag.textContent = tagText;
-              tags.appendChild(tag);
-            });
-            card.appendChild(tags);
-          }
-
-          if (note.url) {
-            const link = document.createElement("a");
-            link.className = "note-link";
-            link.href = note.url;
-            link.target = "_blank";
-            link.rel = "noreferrer";
-            link.textContent = "Open Reference";
-            card.appendChild(link);
-          }
-
-          const actions = document.createElement("div");
-          actions.className = "note-actions";
-
-          const edit = document.createElement("button");
-          edit.type = "button";
-          edit.className = "btn";
-          edit.textContent = "Edit";
-          edit.dataset.action = "edit";
-          edit.dataset.id = note.id;
-
-          const del = document.createElement("button");
-          del.type = "button";
-          del.className = "btn btn-danger";
-          del.textContent = "Delete";
-          del.dataset.action = "delete";
-          del.dataset.id = note.id;
-
-          actions.appendChild(edit);
-          actions.appendChild(del);
-          card.appendChild(actions);
-
-          item.appendChild(card);
-          frag.appendChild(item);
-        });
-
-        el.timelineList.appendChild(frag);
-      }
-
-      async function pullFromGitHub({ silent }) {
-        await runSync(async () => {
-          const token = getToken();
-          persistSyncSettings();
-          setStatus("Pulling notes from GitHub...", "info");
-
-          const remote = await getRemoteFile(token, true);
-          if (!remote) {
-            if (!silent) setStatus("Remote notes-data.js not found. Push once to create it.", "info");
-            return;
-          }
-
-          const parsed = parseNotesScript(remote.text);
-          state.notes = parsed.map((item) => ({
-            ...item,
-            id: item.id || createId(),
-            createdAt: item.createdAt || new Date().toISOString()
-          }));
-
-          persistLocalNotes();
-          renderNotes();
-          if (!state.notes.some((item) => item.id === state.editingId)) resetForm();
-          setStatus(`Pull success. ${state.notes.length} notes loaded (${timeLabel()}).`, "success");
-        });
-      }
-
-      async function pushToGitHub({ silent }) {
-        await runSync(async () => {
-          const token = getToken();
-          if (!token) {
-            if (!silent) setStatus("Push requires a GitHub token.", "error");
-            return;
-          }
-
-          persistSyncSettings();
-          setStatus("Pushing notes to GitHub...", "info");
-
-          const currentRemote = await getRemoteFile(token, true);
-          const contentText = serializeNotesScript(state.notes);
-
-          const body = {
-            message: `Update notes via homepage (${new Date().toISOString()})`,
-            branch: CONFIG.branch,
-            content: encodeBase64Utf8(contentText)
-          };
-
-          if (currentRemote && currentRemote.sha) {
-            body.sha = currentRemote.sha;
-          }
-
-          const response = await fetch(buildApiUrl(), {
-            method: "PUT",
-            headers: githubHeaders(token, true),
-            body: JSON.stringify(body)
-          });
-
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data && data.message ? data.message : `Push failed (${response.status})`);
-          }
-
-          setStatus(`Push success. ${state.notes.length} notes synced (${timeLabel()}).`, "success");
-        });
-      }
-
-      async function maybeAutoPush() {
-        if (!el.autoPush.checked) return;
-        if (!getToken()) {
-          setStatus("Auto push skipped: add token first.", "info");
-          return;
-        }
-        await pushToGitHub({ silent: true });
-      }
-
-      async function runSync(task) {
-        if (state.syncing) return;
-        state.syncing = true;
-        setSyncButtonsState(true);
-
-        try {
-          await task();
-        } catch (error) {
-          setStatus(error && error.message ? error.message : "Sync failed.", "error");
-        } finally {
-          state.syncing = false;
-          setSyncButtonsState(false);
-        }
-      }
-
-      function setSyncButtonsState(disabled) {
-        el.pullBtn.disabled = disabled;
-        el.pushBtn.disabled = disabled;
-      }
-
-      function loadLocalNotes() {
-        const raw = window.localStorage.getItem(CONFIG.notesKey);
-        if (!raw) return [];
-        try {
-          return sanitizeNotes(JSON.parse(raw)).map((item) => ({
-            ...item,
-            id: item.id || createId(),
-            createdAt: item.createdAt || new Date().toISOString()
-          }));
-        } catch {
-          return [];
-        }
-      }
-
-      function persistLocalNotes() {
-        window.localStorage.setItem(CONFIG.notesKey, JSON.stringify(state.notes));
-      }
-
-      function loadSyncSettings() {
-        const token = window.localStorage.getItem(CONFIG.tokenKey);
-        if (token) {
-          el.tokenInput.value = token;
-          el.rememberToken.checked = true;
-        }
-
-        const autoPush = window.localStorage.getItem(CONFIG.autoPushKey);
-        el.autoPush.checked = autoPush === "1";
-      }
-
-      function persistSyncSettings() {
-        const token = getToken();
-        if (el.rememberToken.checked && token) {
-          window.localStorage.setItem(CONFIG.tokenKey, token);
-        } else {
-          window.localStorage.removeItem(CONFIG.tokenKey);
-        }
-        window.localStorage.setItem(CONFIG.autoPushKey, el.autoPush.checked ? "1" : "0");
-      }
-
-      function getToken() {
-        return el.tokenInput.value.trim();
-      }
-
-      async function getRemoteFile(token, allowMissing) {
-        const response = await fetch(buildApiUrl() + "?ref=" + encodeURIComponent(CONFIG.branch), {
-          method: "GET",
-          headers: githubHeaders(token, false)
-        });
-
-        if (response.status === 404 && allowMissing) {
-          return null;
-        }
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data && data.message ? data.message : `GitHub request failed (${response.status})`);
-        }
-
-        const content = typeof data.content === "string" ? data.content.replace(/\n/g, "") : "";
-        return {
-          sha: typeof data.sha === "string" ? data.sha : "",
-          text: decodeBase64Utf8(content)
-        };
-      }
-
-      function parseNotesScript(text) {
-        const match = text.match(/window\.learningNotes\s*=\s*(\[[\s\S]*\])\s*;?\s*$/);
-        if (!match) {
-          throw new Error("notes-data.js format invalid.");
-        }
-
-        let parsed;
-        try {
-          parsed = JSON.parse(match[1]);
-        } catch {
-          throw new Error("notes-data.js JSON parse failed.");
-        }
-
-        return sanitizeNotes(parsed);
-      }
-
-      function serializeNotesScript(items) {
-        const normalized = sanitizeNotes(items).map((item) => ({
-          id: item.id || createId(),
-          createdAt: item.createdAt || new Date().toISOString(),
-          date: item.date,
-          title: item.title,
-          summary: item.summary,
-          tags: item.tags,
-          url: item.url
-        }));
-        return "window.learningNotes = " + JSON.stringify(normalized, null, 2) + ";\n";
-      }
-
-      function sanitizeNotes(input) {
-        if (!Array.isArray(input)) return [];
-
-        return input
-          .map((item) => ({
-            id: typeof item.id === "string" ? item.id : "",
-            createdAt: typeof item.createdAt === "string" ? item.createdAt : "",
-            date: typeof item.date === "string" ? item.date : "",
-            title: typeof item.title === "string" ? item.title : "",
-            summary: typeof item.summary === "string" ? item.summary : "",
-            tags: Array.isArray(item.tags) ? item.tags.filter((tag) => typeof tag === "string") : [],
-            url: typeof item.url === "string" ? item.url : ""
-          }))
-          .filter((item) => item.date && item.title);
-      }
-
-      function sortByDateDesc(a, b) {
-        const dateA = Number(new Date(a.date)) || 0;
-        const dateB = Number(new Date(b.date)) || 0;
-        if (dateA !== dateB) return dateB - dateA;
-
-        const createdA = Number(new Date(a.createdAt)) || 0;
-        const createdB = Number(new Date(b.createdAt)) || 0;
-        return createdB - createdA;
-      }
-
-      function githubHeaders(token, withJson) {
-        const headers = { Accept: "application/vnd.github+json" };
-        if (withJson) headers["Content-Type"] = "application/json";
-        if (token) headers.Authorization = "Bearer " + token;
-        return headers;
-      }
-
-      function buildApiUrl() {
-        const path = CONFIG.path.split("/").map(encodeURIComponent).join("/");
-        return `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`;
-      }
-
-      function encodeBase64Utf8(value) {
-        const bytes = new TextEncoder().encode(value);
-        let binary = "";
-        bytes.forEach((n) => {
-          binary += String.fromCharCode(n);
-        });
-        return btoa(binary);
-      }
-
-      function decodeBase64Utf8(value) {
-        const binary = atob(value);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i += 1) {
-          bytes[i] = binary.charCodeAt(i);
-        }
-        return new TextDecoder().decode(bytes);
-      }
-
-      function isValidHttpUrl(value) {
-        try {
-          const parsed = new URL(value);
-          return parsed.protocol === "http:" || parsed.protocol === "https:";
-        } catch {
-          return false;
-        }
-      }
-
-      function createId() {
-        return "n_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-      }
-
-      function timeLabel() {
-        return new Date().toLocaleString();
-      }
-
-      function setStatus(message, type) {
-        el.syncStatus.className = "status";
-        if (type === "success") el.syncStatus.classList.add("success");
-        if (type === "error") el.syncStatus.classList.add("error");
-        el.syncStatus.textContent = message;
-      }
-    })();
-  </script>
 </body>
 </html>

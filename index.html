@@ -2,10 +2,509 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>my blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SugarAbsinthe | Personal Site</title>
+  <meta name="description" content="SugarAbsinthe 的个人主页，展示个人介绍、能力方向与近期内容。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f2efe9;
+      --surface: rgba(255, 255, 255, 0.74);
+      --surface-strong: #ffffff;
+      --ink: #1c2420;
+      --muted: #5c6661;
+      --accent: #0e8f79;
+      --accent-ink: #0b4d41;
+      --line: #d9ded8;
+      --shadow: 0 16px 45px rgba(13, 31, 26, 0.11);
+      --radius: 22px;
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", "Noto Sans SC", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(60rem 40rem at 90% -5%, rgba(14, 143, 121, 0.16), transparent 62%),
+        radial-gradient(40rem 35rem at -5% 35%, rgba(206, 170, 120, 0.2), transparent 58%),
+        linear-gradient(145deg, #f6f3ee 0%, var(--bg) 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(circle at 1px 1px, rgba(16, 34, 28, 0.08) 1px, transparent 0);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.05));
+      z-index: -1;
+    }
+
+    .container {
+      width: min(var(--max), 92vw);
+      margin: 0 auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      background: rgba(246, 243, 238, 0.84);
+      border-bottom: 1px solid rgba(30, 50, 43, 0.08);
+    }
+
+    .nav-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 0;
+    }
+
+    .brand {
+      font-family: "DM Serif Display", serif;
+      font-size: 1.38rem;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    nav ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.92rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      transition: color 0.24s ease, background-color 0.24s ease;
+    }
+
+    nav a:hover {
+      color: var(--ink);
+      background: rgba(20, 55, 47, 0.08);
+    }
+
+    main {
+      padding: 2.8rem 0 4.5rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 1.2rem;
+      align-items: stretch;
+    }
+
+    .panel {
+      border: 1px solid rgba(24, 54, 46, 0.11);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-main {
+      padding: clamp(1.5rem, 3vw, 2.6rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 350px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      right: -70px;
+      top: -80px;
+      width: 230px;
+      height: 230px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(14, 143, 121, 0.33), rgba(14, 143, 121, 0.02));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.84rem;
+      color: var(--accent-ink);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 1.8rem;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "DM Serif Display", "Noto Sans SC", serif;
+      font-size: clamp(2rem, 4.5vw, 3.85rem);
+      line-height: 1.08;
+      letter-spacing: 0.01em;
+      max-width: 12ch;
+    }
+
+    .hero-copy {
+      margin: 1.05rem 0 0;
+      color: var(--muted);
+      line-height: 1.76;
+      font-size: clamp(0.96rem, 1.2vw, 1.04rem);
+      max-width: 54ch;
+    }
+
+    .cta-row {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 0.65rem 1.1rem;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease, color 0.22s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0e8f79, #0a6f5f);
+      color: #f7fffd;
+      box-shadow: 0 12px 25px rgba(10, 76, 65, 0.3);
+    }
+
+    .btn-secondary {
+      border-color: var(--line);
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .hero-side {
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      justify-content: center;
+    }
+
+    .mini-card {
+      border: 1px solid rgba(20, 49, 41, 0.1);
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 16px;
+      padding: 1rem;
+    }
+
+    .mini-card h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .mini-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 0.92rem;
+    }
+
+    .layout {
+      margin-top: 1.1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.1rem;
+    }
+
+    section {
+      padding: 1.4rem;
+      border-radius: var(--radius);
+      border: 1px solid rgba(19, 47, 40, 0.11);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    h2 {
+      margin: 0 0 0.85rem;
+      font-size: 1.12rem;
+      letter-spacing: 0.02em;
+    }
+
+    .text-muted {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.94rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.85rem;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent-ink);
+      padding: 0.3rem 0.64rem;
+      border-radius: 999px;
+      background: #e8f4f1;
+      border: 1px solid rgba(10, 79, 66, 0.12);
+    }
+
+    .post-list {
+      margin: 0.9rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .post-item a {
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid rgba(22, 52, 43, 0.11);
+      border-radius: 14px;
+      display: block;
+      padding: 0.75rem 0.84rem;
+      background: rgba(255, 255, 255, 0.8);
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .post-item a:hover {
+      border-color: rgba(10, 97, 80, 0.4);
+      transform: translateX(2px);
+    }
+
+    .post-title {
+      display: block;
+      font-size: 0.93rem;
+      font-weight: 700;
+    }
+
+    .post-meta {
+      margin-top: 0.2rem;
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    footer {
+      margin-top: 1.1rem;
+      border: 1px solid rgba(18, 48, 39, 0.1);
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 18px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.6rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .social {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .social a {
+      color: var(--accent-ink);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      will-change: transform, opacity;
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .layout {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero-main {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .nav-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      nav ul {
+        gap: 0.3rem;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 1.6rem 0 2.6rem;
+      }
+
+      .hero-main,
+      .hero-side,
+      section {
+        padding: 1.1rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Hello, this is my GitHub blog</h1>
-  <p>The first piece of content has been launched.</p>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="#top">SugarAbsinthe</a>
+      <nav aria-label="主导航">
+        <ul>
+          <li><a href="#about">关于</a></li>
+          <li><a href="#focus">方向</a></li>
+          <li><a href="#writing">内容</a></li>
+          <li><a href="#contact">联系</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top" class="container">
+    <div class="hero">
+      <article class="panel hero-main reveal">
+        <span class="eyebrow">Personal Website</span>
+        <h1>清晰、克制、但有记忆点</h1>
+        <p class="hero-copy">
+          这里是 SugarAbsinthe 的个人主页。记录我的学习、写作与创作，也展示我对设计和技术细节的追求。
+          我相信好的页面不只是“好看”，而是能让信息更有秩序，让人愿意停留。
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#writing">查看内容</a>
+          <a class="btn btn-secondary" href="https://github.com/SugarAbsinthe" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </article>
+
+      <aside class="panel hero-side reveal">
+        <div class="mini-card">
+          <h3>当前状态</h3>
+          <p>持续更新个人主页，构建简洁但有质感的线上名片。</p>
+        </div>
+        <div class="mini-card">
+          <h3>关键词</h3>
+          <p>Design System / Frontend Craft / Focused Writing</p>
+        </div>
+        <div class="mini-card">
+          <h3>目标</h3>
+          <p>把这个站点打磨成“第一眼就觉得专业”的个人品牌主页。</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="layout">
+      <section id="about" class="reveal">
+        <h2>关于我</h2>
+        <p class="text-muted">
+          我关注可读性、视觉层级和交互细节。相比堆砌效果，我更在意页面是否在每个尺寸下都保持清爽与稳定。
+        </p>
+      </section>
+
+      <section id="focus" class="reveal">
+        <h2>能力方向</h2>
+        <p class="text-muted">专注于前端实现、界面打磨与内容表达。</p>
+        <div class="tags">
+          <span class="tag">HTML/CSS</span>
+          <span class="tag">Responsive UI</span>
+          <span class="tag">Visual Polish</span>
+          <span class="tag">Micro Interaction</span>
+        </div>
+      </section>
+
+      <section id="writing" class="reveal">
+        <h2>近期内容</h2>
+        <p class="text-muted">暂时还没有发布文章，后续更新会第一时间放在这里。</p>
+      </section>
+    </div>
+
+    <footer id="contact" class="reveal">
+      <span>© 2026 SugarAbsinthe. Crafted with care.</span>
+      <div class="social">
+        <a href="https://github.com/SugarAbsinthe" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="mailto:876093364@qq.com">876093364@qq.com</a>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const delay = Number(entry.target.dataset.delay || 0);
+        setTimeout(() => entry.target.classList.add("is-visible"), delay);
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll(".reveal").forEach((el, index) => {
+      el.dataset.delay = String(index * 80);
+      observer.observe(el);
+    });
+  </script>
 </body>
 </html>

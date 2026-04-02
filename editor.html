@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SugarAbsinthe - Note Editor</title>
-  <meta name="description" content="Large body editor with right-side component tools.">
+  <meta name="description" content="Large note editor with right-side insert tools.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -12,13 +12,11 @@
     :root {
       --bg: #f8f8ff;
       --bg-soft: #f2f7ff;
-      --card: #ffffff;
       --text: #181a2a;
       --muted: #5a607f;
       --line: #d8ddf2;
       --line-strong: #bec8ee;
       --primary: #6c4dff;
-      --danger: #d03c62;
       --radius-lg: 20px;
       --radius-md: 12px;
       --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
@@ -181,104 +179,29 @@
       padding: 0.72rem;
       display: grid;
       align-content: start;
-      gap: 0.52rem;
-    }
-
-    .block {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fff;
-      padding: 0.58rem;
-      display: grid;
-      gap: 0.38rem;
-    }
-
-    .block.active {
-      border-color: #9fafe6;
-      box-shadow: 0 0 0 2px rgba(108, 77, 255, 0.1);
-    }
-
-    .block-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.35rem;
-      flex-wrap: wrap;
-    }
-
-    .block-tag {
-      border: 1px solid #d3dcff;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: #3f4ea0;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      padding: 0.14rem 0.48rem;
-    }
-
-    .block-remove {
-      border: 1px solid #efb1c4;
-      border-radius: 8px;
-      background: #fff5f8;
-      color: var(--danger);
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 0.16rem 0.46rem;
-      cursor: pointer;
-    }
-
-    .field {
-      display: grid;
-      gap: 0.24rem;
-    }
-
-    .field label {
-      color: var(--muted);
-      font-size: 0.72rem;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 110px 1fr;
       gap: 0.4rem;
-      align-items: center;
     }
 
-    .field input,
-    .field select,
-    .field textarea {
+    .content-input {
       width: 100%;
       border: 1px solid var(--line-strong);
-      border-radius: 9px;
+      border-radius: 10px;
       background: #fff;
       color: var(--text);
-      font: inherit;
-      font-size: 0.92rem;
-      padding: 0.5rem 0.56rem;
-    }
-
-    .field textarea {
-      min-height: 110px;
-      resize: vertical;
-      line-height: 1.58;
-    }
-
-    .field textarea.main-paragraph {
-      min-height: 58vh;
-      font-size: 0.98rem;
-      line-height: 1.68;
-    }
-
-    .field textarea.code-input {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.98rem;
+      line-height: 1.7;
+      padding: 0.9rem;
+      resize: none;
+      overflow: hidden;
+      min-height: 70vh;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
       font-size: 0.86rem;
-      min-height: 140px;
-      line-height: 1.56;
+      line-height: 1.55;
     }
 
     .toolbar {
@@ -361,12 +284,9 @@
     .status.success { color: #2f7a4e; }
 
     .title-input:focus-visible,
-    .field input:focus-visible,
-    .field select:focus-visible,
-    .field textarea:focus-visible,
+    .content-input:focus-visible,
     .btn:focus-visible,
     .tool-btn:focus-visible,
-    .block-remove:focus-visible,
     .back-link:focus-visible,
     .brand:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
@@ -398,12 +318,8 @@
         min-height: 70vh;
       }
 
-      .field textarea.main-paragraph {
-        min-height: 46vh;
-      }
-
-      .row {
-        grid-template-columns: 1fr;
+      .content-input {
+        min-height: 58vh;
       }
     }
   </style>
@@ -421,7 +337,7 @@
 
     <main class="editor-shell">
       <h1 class="heading">Editor</h1>
-      <p class="sub">Keep writing in the large body area. Add components from the right and they appear directly below your current block.</p>
+      <p class="sub">Write in one large body area. Tools on the right insert components directly into the body at your cursor position.</p>
 
       <div class="title-row">
         <label class="label" for="title-input">Title</label>
@@ -429,13 +345,14 @@
       </div>
 
       <div class="workspace">
-        <section id="body-panel" class="body-panel">
-          <div id="blocks-container"></div>
+        <section class="body-panel">
+          <p class="hint">Tip: place your cursor where you want, then click a tool to insert that component directly into the body text.</p>
+          <textarea id="content-input" class="content-input" placeholder="# Heading&#10;&#10;Write your content here..."></textarea>
         </section>
 
         <aside class="toolbar">
           <h2>Components</h2>
-          <p>Click one to insert it below the block you are currently editing.</p>
+          <p>Insert templates into body at the cursor position.</p>
           <button class="tool-btn" type="button" data-add-type="paragraph">+ Paragraph</button>
           <button class="tool-btn" type="button" data-add-type="heading">+ Heading</button>
           <button class="tool-btn" type="button" data-add-type="quote">+ Quote</button>
@@ -456,7 +373,7 @@
   <script>
     (() => {
       const titleInput = document.getElementById("title-input");
-      const blocksContainer = document.getElementById("blocks-container");
+      const contentInput = document.getElementById("content-input");
       const saveBtn = document.getElementById("save-btn");
       const statusEl = document.getElementById("status");
       const modeBadgeEl = document.getElementById("mode-badge");
@@ -465,292 +382,104 @@
       const params = new URLSearchParams(window.location.search);
       const postId = params.get("id") || "";
       let existingPost = null;
-      const state = { blocks: [], activeBlockId: "" };
 
       init();
 
       function init() {
-        if (postId) existingPost = postStore.getPostById(postId);
+        if (postId) {
+          existingPost = postStore.getPostById(postId);
+        }
 
         if (existingPost) {
           modeBadgeEl.textContent = "Edit Note";
           titleInput.value = existingPost.title;
-          state.blocks = loadBlocksFromPost(existingPost);
+          contentInput.value = resolveExistingContent(existingPost);
         } else {
           modeBadgeEl.textContent = "New Note";
-          state.blocks = [createDefaultBlock("paragraph")];
+          contentInput.value = "";
         }
 
-        state.activeBlockId = state.blocks[0] ? state.blocks[0].id : "";
+        autoGrowTextarea();
+        contentInput.addEventListener("input", autoGrowTextarea);
 
         addButtons.forEach((btn) => {
-          btn.addEventListener("click", () => addBlock(btn.dataset.addType || "paragraph"));
+          btn.addEventListener("click", () => insertTemplate(btn.dataset.addType || "paragraph"));
         });
 
         saveBtn.addEventListener("click", onSave);
         window.addEventListener("keydown", onKeydown);
-        renderBlocks();
       }
 
-      function loadBlocksFromPost(post) {
-        if (Array.isArray(post.blocks) && post.blocks.length) {
-          return sanitizeBlocksForEditor(post.blocks);
+      function resolveExistingContent(post) {
+        if (typeof post.content === "string" && post.content.trim()) return post.content;
+        if (Array.isArray(post.blocks) && post.blocks.length) return blocksToMarkdown(post.blocks);
+        return "";
+      }
+
+      function insertTemplate(type) {
+        const snippet = templateForType(type);
+        if (!snippet) return;
+
+        const start = contentInput.selectionStart;
+        const end = contentInput.selectionEnd;
+        const value = contentInput.value;
+
+        const before = value.slice(0, start);
+        const after = value.slice(end);
+
+        const needsLeadingLineBreak = before.length > 0 && !before.endsWith("\n");
+        const prefix = needsLeadingLineBreak ? "\n\n" : "";
+        const insertion = prefix + snippet;
+
+        contentInput.value = before + insertion + after;
+
+        const cursor = before.length + insertion.length;
+        contentInput.focus();
+        contentInput.selectionStart = cursor;
+        contentInput.selectionEnd = cursor;
+        autoGrowTextarea();
+      }
+
+      function templateForType(type) {
+        if (type === "paragraph") {
+          return "New paragraph...";
         }
-        if (typeof post.content === "string" && post.content.trim()) {
-          return [{ id: createId(), type: "paragraph", text: post.content.trim() }];
+        if (type === "heading") {
+          return "## New Heading";
         }
-        return [createDefaultBlock("paragraph")];
-      }
-
-      function sanitizeBlocksForEditor(blocks) {
-        return blocks
-          .map((item) => {
-            const type = normalizeType(item && item.type);
-            if (!type) return null;
-            if (type === "paragraph") return { id: createId(), type, text: String(item.text || "") };
-            if (type === "heading") return { id: createId(), type, text: String(item.text || ""), level: normalizeHeadingLevel(item.level) };
-            if (type === "quote") return { id: createId(), type, text: String(item.text || "") };
-            if (type === "code") return { id: createId(), type, lang: String(item.lang || ""), code: String(item.code || "") };
-            if (type === "table") return { id: createId(), type, rows: String(item.rows || "") };
-            return null;
-          })
-          .filter(Boolean);
-      }
-
-      function sanitizeBlocksForSave(blocks) {
-        return blocks
-          .map((item) => {
-            const type = normalizeType(item && item.type);
-            if (!type) return null;
-            if (type === "paragraph") return { type, text: String(item.text || "") };
-            if (type === "heading") return { type, text: String(item.text || ""), level: normalizeHeadingLevel(item.level) };
-            if (type === "quote") return { type, text: String(item.text || "") };
-            if (type === "code") return { type, lang: String(item.lang || ""), code: String(item.code || "") };
-            if (type === "table") return { type, rows: String(item.rows || "") };
-            return null;
-          })
-          .filter(Boolean);
-      }
-
-      function createDefaultBlock(type) {
-        const base = { id: createId(), type: normalizeType(type) || "paragraph" };
-        if (base.type === "paragraph") return { ...base, text: "" };
-        if (base.type === "heading") return { ...base, text: "", level: 2 };
-        if (base.type === "quote") return { ...base, text: "" };
-        if (base.type === "code") return { ...base, lang: "", code: "" };
-        if (base.type === "table") return { ...base, rows: "Column A | Column B\nValue 1 | Value 2" };
-        return { ...base, text: "" };
-      }
-
-      function addBlock(type) {
-        const newBlock = createDefaultBlock(type);
-        const insertIndex = getInsertIndexAfterActive();
-        const next = state.blocks.slice();
-        next.splice(insertIndex, 0, newBlock);
-        state.blocks = next;
-        state.activeBlockId = newBlock.id;
-        renderBlocks();
-        focusFirstInput(newBlock.id);
-      }
-
-      function getInsertIndexAfterActive() {
-        const index = state.blocks.findIndex((item) => item.id === state.activeBlockId);
-        if (index < 0) return state.blocks.length;
-        return index + 1;
-      }
-
-      function removeBlock(id) {
-        const index = state.blocks.findIndex((item) => item.id === id);
-        if (index < 0) return;
-
-        if (state.blocks.length === 1) {
-          state.blocks = [createDefaultBlock("paragraph")];
-          state.activeBlockId = state.blocks[0].id;
-          renderBlocks();
-          focusFirstInput(state.activeBlockId);
-          return;
+        if (type === "quote") {
+          return "> Quote text...";
         }
-
-        const next = state.blocks.filter((item) => item.id !== id);
-        state.blocks = next;
-        const fallback = next[Math.min(index, next.length - 1)];
-        state.activeBlockId = fallback ? fallback.id : "";
-        renderBlocks();
-        if (state.activeBlockId) focusFirstInput(state.activeBlockId);
-      }
-
-      function updateBlock(id, patch) {
-        state.blocks = state.blocks.map((item) => (item.id === id ? { ...item, ...patch } : item));
-      }
-
-      function renderBlocks() {
-        blocksContainer.innerHTML = "";
-        const frag = document.createDocumentFragment();
-
-        state.blocks.forEach((block, index) => {
-          const item = document.createElement("article");
-          item.className = "block";
-          if (block.id === state.activeBlockId) item.classList.add("active");
-          item.dataset.blockId = block.id;
-          item.addEventListener("focusin", () => {
-            state.activeBlockId = block.id;
-            refreshActiveStyles();
-          });
-
-          const head = document.createElement("div");
-          head.className = "block-head";
-
-          const tag = document.createElement("span");
-          tag.className = "block-tag";
-          tag.textContent = labelForType(block.type);
-
-          const removeBtn = document.createElement("button");
-          removeBtn.type = "button";
-          removeBtn.className = "block-remove";
-          removeBtn.textContent = "Remove";
-          removeBtn.addEventListener("click", () => removeBlock(block.id));
-
-          head.appendChild(tag);
-          head.appendChild(removeBtn);
-          item.appendChild(head);
-
-          renderBlockFields(block, index, item);
-          frag.appendChild(item);
-        });
-
-        blocksContainer.appendChild(frag);
-      }
-
-      function refreshActiveStyles() {
-        document.querySelectorAll(".block").forEach((node) => {
-          if (node.dataset.blockId === state.activeBlockId) {
-            node.classList.add("active");
-          } else {
-            node.classList.remove("active");
-          }
-        });
-      }
-
-      function renderBlockFields(block, index, container) {
-        if (block.type === "paragraph") {
-          const textarea = createTextareaField("Text", block.text, (value) => updateBlock(block.id, { text: value }));
-          if (index === 0) textarea.classList.add("main-paragraph");
-          container.appendChild(wrapField("Text", textarea));
-          return;
+        if (type === "code") {
+          return "```js\nconsole.log('Hello world');\n```";
         }
-
-        if (block.type === "heading") {
-          const levelSelect = document.createElement("select");
-          [
-            { label: "H1", value: "1" },
-            { label: "H2", value: "2" },
-            { label: "H3", value: "3" }
-          ].forEach((item) => {
-            const option = document.createElement("option");
-            option.value = item.value;
-            option.textContent = item.label;
-            if (Number(item.value) === normalizeHeadingLevel(block.level)) option.selected = true;
-            levelSelect.appendChild(option);
-          });
-          levelSelect.addEventListener("change", () => updateBlock(block.id, { level: normalizeHeadingLevel(levelSelect.value) }));
-
-          const input = document.createElement("input");
-          input.type = "text";
-          input.value = block.text || "";
-          input.placeholder = "Heading text...";
-          input.addEventListener("input", () => updateBlock(block.id, { text: input.value }));
-
-          const row = document.createElement("div");
-          row.className = "row";
-          row.appendChild(levelSelect);
-          row.appendChild(input);
-          container.appendChild(wrapField("Heading", row));
-          return;
+        if (type === "table") {
+          return "| Column A | Column B |\n| --- | --- |\n| Value 1 | Value 2 |";
         }
-
-        if (block.type === "quote") {
-          const textarea = createTextareaField("Quote", block.text, (value) => updateBlock(block.id, { text: value }));
-          autoGrowTextarea(textarea, 110);
-          container.appendChild(wrapField("Quote", textarea));
-          return;
-        }
-
-        if (block.type === "code") {
-          const langInput = document.createElement("input");
-          langInput.type = "text";
-          langInput.value = block.lang || "";
-          langInput.placeholder = "Language (optional)";
-          langInput.addEventListener("input", () => updateBlock(block.id, { lang: langInput.value }));
-
-          const codeTextarea = createTextareaField("Code", block.code, (value) => {
-            updateBlock(block.id, { code: value });
-            autoGrowTextarea(codeTextarea, 140);
-          });
-          codeTextarea.classList.add("code-input");
-          autoGrowTextarea(codeTextarea, 140);
-
-          container.appendChild(wrapField("Language", langInput));
-          container.appendChild(wrapField("Code", codeTextarea));
-          return;
-        }
-
-        if (block.type === "table") {
-          const tableTextarea = createTextareaField("Rows", block.rows, (value) => {
-            updateBlock(block.id, { rows: value });
-            autoGrowTextarea(tableTextarea, 120);
-          });
-          tableTextarea.placeholder = "Column A | Column B\nValue 1 | Value 2";
-          autoGrowTextarea(tableTextarea, 120);
-          container.appendChild(wrapField("Table (use | between columns)", tableTextarea));
-        }
+        return "";
       }
 
-      function wrapField(labelText, inputNode) {
-        const field = document.createElement("div");
-        field.className = "field";
-        const label = document.createElement("label");
-        label.textContent = labelText;
-        field.appendChild(label);
-        field.appendChild(inputNode);
-        return field;
-      }
-
-      function createTextareaField(labelText, value, onInput) {
-        const textarea = document.createElement("textarea");
-        textarea.value = value || "";
-        textarea.addEventListener("input", () => onInput(textarea.value));
-        return textarea;
-      }
-
-      function focusFirstInput(blockId) {
-        window.requestAnimationFrame(() => {
-          const target = document.querySelector('[data-block-id="' + blockId + '"] textarea, [data-block-id="' + blockId + '"] input, [data-block-id="' + blockId + '"] select');
-          if (target) target.focus();
-        });
-      }
-
-      function autoGrowTextarea(textarea, minHeight) {
-        const minimum = Number(minHeight) || 100;
-        textarea.style.height = "auto";
-        textarea.style.height = Math.max(minimum, textarea.scrollHeight) + "px";
+      function autoGrowTextarea() {
+        contentInput.style.height = "auto";
+        const nextHeight = Math.max(460, contentInput.scrollHeight);
+        contentInput.style.height = nextHeight + "px";
       }
 
       function onSave() {
         const title = titleInput.value.trim();
+        const content = contentInput.value;
+
         if (!title) {
           setStatus("Title is required.", "error");
           titleInput.focus();
           return;
         }
 
-        const blocksForSave = sanitizeBlocksForSave(state.blocks);
-        const content = blocksToMarkdown(blocksForSave);
-
         postStore.upsertPost({
           id: existingPost ? existingPost.id : undefined,
           title,
           content,
-          blocks: blocksForSave,
+          blocks: [],
           createdAt: existingPost ? existingPost.createdAt : undefined
         });
 
@@ -775,73 +504,32 @@
       }
 
       function blockToMarkdown(block) {
-        if (block.type === "paragraph") return String(block.text || "").trim();
-        if (block.type === "heading") {
+        const type = block && block.type;
+        if (type === "paragraph") return String(block.text || "").trim();
+        if (type === "heading") {
           const text = String(block.text || "").trim();
-          if (!text) return "";
           const level = normalizeHeadingLevel(block.level);
-          return "#".repeat(level) + " " + text;
+          return text ? "#".repeat(level) + " " + text : "";
         }
-        if (block.type === "quote") {
-          const quote = String(block.text || "").trim();
-          if (!quote) return "";
-          return quote.split("\n").map((line) => "> " + line).join("\n");
+        if (type === "quote") {
+          const text = String(block.text || "").trim();
+          return text ? text.split("\n").map((line) => "> " + line).join("\n") : "";
         }
-        if (block.type === "code") {
+        if (type === "code") {
           const code = String(block.code || "");
-          if (!code.trim()) return "";
           const lang = String(block.lang || "").trim();
-          return "```" + lang + "\n" + code + "\n```";
+          return code.trim() ? "```" + lang + "\n" + code + "\n```" : "";
         }
-        if (block.type === "table") {
-          return tableRowsToMarkdown(String(block.rows || ""));
+        if (type === "table") {
+          return String(block.rows || "").trim();
         }
         return "";
-      }
-
-      function tableRowsToMarkdown(rowsText) {
-        const rows = rowsText
-          .split("\n")
-          .map((line) => line.split("|").map((cell) => cell.trim()).filter((cell) => cell.length > 0))
-          .filter((cells) => cells.length > 0);
-
-        if (!rows.length) return "";
-        const header = rows[0];
-        const body = rows.slice(1);
-        const separator = header.map(() => "---");
-        const lines = [
-          "| " + header.join(" | ") + " |",
-          "| " + separator.join(" | ") + " |"
-        ];
-        body.forEach((row) => {
-          const normalized = header.map((_, index) => row[index] || "");
-          lines.push("| " + normalized.join(" | ") + " |");
-        });
-        return lines.join("\n");
-      }
-
-      function normalizeType(type) {
-        const allowed = ["paragraph", "heading", "quote", "code", "table"];
-        return allowed.includes(type) ? type : "";
       }
 
       function normalizeHeadingLevel(value) {
         const level = Number(value);
         if (level === 1 || level === 2 || level === 3) return level;
         return 2;
-      }
-
-      function labelForType(type) {
-        if (type === "paragraph") return "Paragraph";
-        if (type === "heading") return "Heading";
-        if (type === "quote") return "Quote";
-        if (type === "code") return "Code Block";
-        if (type === "table") return "Table";
-        return "Block";
-      }
-
-      function createId() {
-        return "b_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
       }
 
       function setStatus(message, type) {

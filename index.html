@@ -3,28 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astro-Style Blog Starter</title>
-  <meta name="description" content="A light Astro-style blog homepage with content-first structure and modern visual system.">
+  <title>Astro Blog - Notes</title>
+  <meta name="description" content="Simple notes list page with add, delete, and edit workflows.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,600;6..72,700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f9f7ff;
+      --bg: #f8f8ff;
       --bg-soft: #f2f7ff;
       --card: #ffffff;
       --text: #181a2a;
       --muted: #5a607f;
-      --line: #d9ddf2;
-      --line-strong: #bfc7ec;
+      --line: #d8ddf2;
+      --line-strong: #bec8ee;
       --primary: #6c4dff;
-      --primary-soft: #ece8ff;
-      --accent: #0da0ff;
-      --warm: #ff9f5a;
-      --radius-lg: 22px;
-      --radius-md: 14px;
-      --max-width: 1120px;
-      --shadow: 0 20px 48px rgba(44, 53, 115, 0.14);
+      --danger: #d03c62;
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
+      --max-width: 1040px;
     }
 
     * {
@@ -41,490 +39,226 @@
       font-family: "Outfit", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(44rem 26rem at -10% -10%, rgba(13, 160, 255, 0.17), transparent 62%),
-        radial-gradient(34rem 20rem at 105% -12%, rgba(255, 159, 90, 0.18), transparent 60%),
-        linear-gradient(180deg, #fefeff 0%, var(--bg) 58%, var(--bg-soft) 100%);
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: -1;
-      background-image:
-        linear-gradient(rgba(132, 147, 214, 0.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(132, 147, 214, 0.08) 1px, transparent 1px);
-      background-size: 42px 42px;
-      mask-image: radial-gradient(circle at center, black 26%, transparent 84%);
+        radial-gradient(42rem 24rem at -10% -10%, rgba(113, 132, 255, 0.2), transparent 62%),
+        radial-gradient(30rem 18rem at 110% -8%, rgba(13, 160, 255, 0.18), transparent 60%),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 56%, var(--bg-soft) 100%);
     }
 
     .page {
       width: min(var(--max-width), 92vw);
       margin: 0 auto;
-      padding: 1.3rem 0 3rem;
+      padding: 1.2rem 0 2.6rem;
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
+      gap: 0.8rem;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.86);
-      backdrop-filter: blur(8px);
-      padding: 0.48rem 0.6rem;
-      box-shadow: 0 10px 24px rgba(69, 80, 149, 0.1);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px rgba(72, 87, 164, 0.1);
+      padding: 0.46rem 0.6rem;
     }
 
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.55rem;
       text-decoration: none;
       color: var(--text);
-      padding: 0.2rem 0.45rem;
       border-radius: 999px;
+      padding: 0.2rem 0.45rem;
       font-weight: 700;
       letter-spacing: 0.01em;
     }
 
     .brand-mark {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border-radius: 6px;
       transform: rotate(45deg);
-      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-      box-shadow: 0 8px 16px rgba(108, 77, 255, 0.25);
+      background: linear-gradient(135deg, var(--primary) 0%, #5f8bff 100%);
+      box-shadow: 0 8px 14px rgba(108, 77, 255, 0.25);
       display: inline-block;
     }
 
     .brand-text {
       font-family: "Newsreader", serif;
-      font-size: 1.16rem;
+      font-size: 1.14rem;
     }
 
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .nav-links a {
+    .primary-link {
       text-decoration: none;
-      color: var(--muted);
-      font-size: 0.84rem;
-      font-weight: 600;
-      border-radius: 999px;
       border: 1px solid transparent;
-      padding: 0.42rem 0.74rem;
-      transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
-    }
-
-    .nav-links a:hover {
-      color: var(--text);
-      border-color: var(--line-strong);
-      background: #fff;
-    }
-
-    .nav-links a:focus-visible,
-    .btn:focus-visible {
-      outline: 3px solid rgba(13, 160, 255, 0.34);
-      outline-offset: 2px;
-    }
-
-    .nav-links .cta-link {
-      color: #fff;
-      border-color: transparent;
+      border-radius: 999px;
       background: linear-gradient(120deg, var(--primary) 0%, #5f8bff 100%);
-      box-shadow: 0 8px 20px rgba(108, 77, 255, 0.26);
+      color: #fff;
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 0.48rem 0.82rem;
+      box-shadow: 0 8px 16px rgba(108, 77, 255, 0.22);
     }
 
     .hero {
-      margin-top: 1rem;
+      margin-top: 0.9rem;
       border: 1px solid var(--line);
       border-radius: var(--radius-lg);
-      background:
-        linear-gradient(128deg, #ffffff 0%, #f8f8ff 60%, #f3f8ff 100%);
+      background: linear-gradient(125deg, #ffffff 0%, #f7f7ff 62%, #f1f7ff 100%);
       box-shadow: var(--shadow);
-      padding: clamp(1.1rem, 2.5vw, 2rem);
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 1rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      right: -100px;
-      top: -150px;
-      background: radial-gradient(circle, rgba(108, 77, 255, 0.12) 0%, rgba(108, 77, 255, 0) 70%);
-      pointer-events: none;
-    }
-
-    .eyebrow {
-      margin: 0;
-      color: var(--primary);
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-weight: 700;
-    }
-
-    h1 {
-      margin: 0.52rem 0 0;
-      font-family: "Newsreader", serif;
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      line-height: 1.02;
-      letter-spacing: -0.02em;
-      max-width: 16ch;
-    }
-
-    .hero-copy p {
-      margin: 0.88rem 0 0;
-      color: var(--muted);
-      line-height: 1.68;
-      max-width: 60ch;
-      font-size: 0.95rem;
-    }
-
-    .hero-actions {
-      margin-top: 1rem;
+      padding: 1rem 1.05rem;
       display: flex;
-      gap: 0.55rem;
+      justify-content: space-between;
+      gap: 0.8rem;
       flex-wrap: wrap;
+      align-items: flex-end;
     }
 
-    .btn {
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.35rem;
-      border-radius: 999px;
+    .hero h1 {
+      margin: 0;
+      font-family: "Newsreader", serif;
+      font-size: clamp(1.7rem, 4.4vw, 2.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+    }
+
+    .hero p {
+      margin: 0.55rem 0 0;
+      color: var(--muted);
+      line-height: 1.56;
+      max-width: 62ch;
+      font-size: 0.92rem;
+    }
+
+    .count-badge {
       border: 1px solid var(--line-strong);
-      font-size: 0.86rem;
-      font-weight: 700;
-      padding: 0.56rem 0.9rem;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    }
-
-    .btn.primary {
-      color: #fff;
-      border-color: transparent;
-      background: linear-gradient(120deg, var(--primary) 0%, #5f8bff 100%);
-      box-shadow: 0 8px 18px rgba(108, 77, 255, 0.28);
-    }
-
-    .btn.secondary {
-      color: var(--text);
+      border-radius: 999px;
       background: #fff;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.38rem 0.66rem;
     }
 
-    .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(69, 80, 149, 0.18);
+    .status {
+      margin-top: 0.65rem;
+      border: 1px solid #cce4d8;
+      background: #f3fff8;
+      color: #2f7a4e;
+      border-radius: 11px;
+      padding: 0.52rem 0.62rem;
+      font-size: 0.84rem;
+      font-weight: 600;
     }
 
-    .hero-panel {
+    .posts {
+      margin-top: 0.82rem;
+      display: grid;
+      gap: 0.58rem;
+    }
+
+    .post-card {
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
-      background: #fff;
-      padding: 0.9rem;
-      align-self: center;
-    }
-
-    .hero-panel h2 {
-      margin: 0;
-      font-size: 0.95rem;
-      letter-spacing: 0.01em;
-    }
-
-    .stack {
-      list-style: none;
-      margin: 0.72rem 0 0;
-      padding: 0;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      padding: 0.76rem 0.84rem;
       display: grid;
       gap: 0.52rem;
     }
 
-    .stack li {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: linear-gradient(122deg, #ffffff 0%, #f6f7ff 100%);
-      padding: 0.56rem 0.62rem;
-    }
-
-    .stack strong {
-      display: block;
-      font-size: 0.84rem;
-      margin-bottom: 0.16rem;
-    }
-
-    .stack span {
-      color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.45;
-    }
-
-    .quickstart {
-      margin-top: 0.95rem;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: #fff;
-      box-shadow: var(--shadow);
-      padding: 1rem;
-      display: grid;
-      grid-template-columns: 1.04fr 0.96fr;
-      gap: 0.75rem;
-      align-items: start;
-    }
-
-    .quickstart h2 {
-      margin: 0;
-      font-family: "Newsreader", serif;
-      font-size: clamp(1.45rem, 2.8vw, 1.95rem);
-      line-height: 1.08;
-      letter-spacing: -0.01em;
-    }
-
-    .quickstart p {
-      margin: 0.52rem 0 0;
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.58;
-      max-width: 58ch;
-    }
-
-    .steps {
-      margin: 0.74rem 0 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 0.44rem;
-    }
-
-    .steps li {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: linear-gradient(126deg, #ffffff 0%, #f4f7ff 100%);
-      padding: 0.54rem 0.62rem;
-      font-size: 0.84rem;
-      color: var(--text);
-      line-height: 1.46;
-    }
-
-    .steps strong {
-      color: var(--primary);
-      font-weight: 700;
-      margin-right: 0.34rem;
-    }
-
-    .integration-list {
-      margin: 0.72rem 0 0;
-      padding: 0;
-      list-style: none;
+    .post-head {
       display: flex;
-      gap: 0.36rem;
+      justify-content: space-between;
+      gap: 0.45rem;
       flex-wrap: wrap;
+      align-items: baseline;
     }
 
-    .integration-pill {
-      border: 1px solid var(--line-strong);
-      border-radius: 999px;
-      background: var(--primary-soft);
-      color: #3d2e99;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.24rem 0.55rem;
+    .post-title {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.3;
       letter-spacing: 0.01em;
     }
 
-    .terminal {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      background: #fcfcff;
-      overflow: hidden;
+    .post-title a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    .terminal-head {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      border-bottom: 1px solid var(--line);
-      padding: 0.45rem 0.58rem;
-      font-size: 0.73rem;
-      color: var(--muted);
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
+    .post-title a:hover {
+      text-decoration: underline;
     }
 
-    .terminal-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      display: inline-block;
-    }
-
-    .terminal-dot.pink { background: #ff7ca7; }
-    .terminal-dot.gold { background: #ffb85b; }
-    .terminal-dot.blue { background: #62b2ff; }
-
-    .terminal pre {
+    .post-updated {
       margin: 0;
-      padding: 0.74rem 0.7rem;
-      overflow-x: auto;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.82rem;
-      line-height: 1.62;
-      color: #1f2a63;
-      background: linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
-    }
-
-    .command-line {
-      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
       white-space: nowrap;
     }
 
-    .command-line::before {
-      content: "$ ";
-      color: #6071c0;
-      font-weight: 700;
-    }
-
-    .section {
-      margin-top: 0.95rem;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: rgba(255, 255, 255, 0.8);
-      padding: 1rem;
-      box-shadow: var(--shadow);
-    }
-
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 0.6rem;
-      margin-bottom: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .section-head h2 {
-      margin: 0;
-      font-family: "Newsreader", serif;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      line-height: 1.08;
-      letter-spacing: -0.01em;
-    }
-
-    .section-head p {
+    .post-excerpt {
       margin: 0;
       color: var(--muted);
-      font-size: 0.88rem;
-      max-width: 58ch;
-      line-height: 1.55;
+      font-size: 0.86rem;
+      line-height: 1.56;
+      white-space: pre-wrap;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.6rem;
+    .post-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
     }
 
-    .feature-card,
-    .post-card {
-      border: 1px solid var(--line);
+    .btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.81rem;
+      font-weight: 700;
+      padding: 0.38rem 0.62rem;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      border-color: #9fafe6;
+    }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: #efb1c4;
+      background: #fff5f8;
+    }
+
+    .empty {
+      margin-top: 0.82rem;
+      border: 1px dashed var(--line-strong);
       border-radius: 14px;
       background: #fff;
-      padding: 0.76rem;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .feature-card:hover,
-    .post-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--line-strong);
-      box-shadow: 0 14px 28px rgba(69, 80, 149, 0.14);
-    }
-
-    .feature-card h3,
-    .post-card h3 {
-      margin: 0;
-      font-size: 0.96rem;
-      line-height: 1.3;
-    }
-
-    .feature-card p,
-    .post-card p {
-      margin: 0.44rem 0 0;
+      padding: 1rem;
       color: var(--muted);
-      font-size: 0.85rem;
-      line-height: 1.56;
-    }
-
-    .post-meta {
-      margin-top: 0.56rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.32rem;
-      color: var(--primary);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .callout {
-      margin-top: 0.95rem;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background:
-        linear-gradient(126deg, #ffffff 0%, #f2ecff 58%, #eef7ff 100%);
-      box-shadow: var(--shadow);
-      padding: 1.08rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.8rem;
-      flex-wrap: wrap;
-    }
-
-    .callout h2 {
-      margin: 0;
-      font-family: "Newsreader", serif;
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      letter-spacing: -0.01em;
-    }
-
-    .callout p {
-      margin: 0.45rem 0 0;
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.56;
-      max-width: 62ch;
+      font-size: 0.9rem;
+      line-height: 1.58;
     }
 
     .footer {
       margin-top: 0.95rem;
       border-top: 1px solid var(--line);
-      padding-top: 0.76rem;
+      padding-top: 0.74rem;
+      color: var(--muted);
+      font-size: 0.8rem;
       display: flex;
       justify-content: space-between;
       gap: 0.5rem;
       flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 0.8rem;
     }
 
     .footer a {
@@ -533,247 +267,168 @@
       font-weight: 700;
     }
 
-    @keyframes rise {
-      from {
-        opacity: 0;
-        transform: translateY(14px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .primary-link:focus-visible,
+    .btn:focus-visible {
+      outline: 3px solid rgba(13, 160, 255, 0.35);
+      outline-offset: 2px;
     }
 
-    .reveal {
-      opacity: 0;
-      animation: rise 0.62s ease forwards;
-    }
-
-    .delay-1 { animation-delay: 0.06s; }
-    .delay-2 { animation-delay: 0.12s; }
-    .delay-3 { animation-delay: 0.18s; }
-    .delay-4 { animation-delay: 0.24s; }
-    .delay-5 { animation-delay: 0.3s; }
-    .delay-6 { animation-delay: 0.36s; }
-
-    @media (max-width: 1000px) {
-      .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .quickstart {
-        grid-template-columns: 1fr;
-      }
-
-      .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 760px) {
+    @media (max-width: 720px) {
       .topbar {
-        border-radius: 18px;
-        align-items: flex-start;
         flex-direction: column;
+        align-items: flex-start;
+        border-radius: 16px;
       }
 
-      .nav-links {
-        width: 100%;
-        justify-content: flex-start;
-      }
-
-      .section {
-        padding: 0.84rem;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .callout {
+      .hero {
         padding: 0.9rem;
-      }
-
-      .terminal pre {
-        font-size: 0.78rem;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .reveal {
-        opacity: 1;
-        animation: none;
-      }
-
-      .feature-card,
-      .post-card,
-      .btn {
-        transition: none;
       }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <header class="topbar reveal">
-      <a class="brand" href="/">
+    <header class="topbar">
+      <a class="brand" href="./index.html">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">Astro Starter</span>
+        <span class="brand-text">Astro Notes</span>
       </a>
-      <nav class="nav-links" aria-label="Main Navigation">
-        <a href="#quickstart">Quick Start</a>
-        <a href="#features">Features</a>
-        <a href="#posts">Posts</a>
-        <a href="#resources">Resources</a>
-        <a class="cta-link" href="#launch">Get Started</a>
-      </nav>
+      <a class="primary-link" href="./editor.html">+ Add Note</a>
     </header>
 
-    <section class="hero reveal delay-1">
-      <div class="hero-copy">
-        <p class="eyebrow">Content First Framework</p>
-        <h1>Build Fast, Content-Rich Sites with Astro</h1>
-        <p>
-          A clean baseline inspired by Astro's product style: strong typography,
-          bright surfaces, and component-driven sections for blogs, docs, and
-          personal websites.
-        </p>
-        <div class="hero-actions">
-          <a class="btn primary" href="#posts">Explore Posts</a>
-          <a class="btn secondary" href="#features">View Features</a>
-        </div>
-      </div>
-
-      <aside class="hero-panel">
-        <h2>Starter Stack</h2>
-        <ul class="stack">
-          <li>
-            <strong>Content Collections</strong>
-            <span>Type-safe markdown content for posts and docs.</span>
-          </li>
-          <li>
-            <strong>Island Architecture</strong>
-            <span>Ship less JavaScript by hydrating only interactive parts.</span>
-          </li>
-          <li>
-            <strong>Framework Freedom</strong>
-            <span>Mix React, Vue, Svelte, and plain HTML in one project.</span>
-          </li>
-        </ul>
-      </aside>
-    </section>
-
-    <section id="quickstart" class="quickstart reveal delay-2">
+    <section class="hero">
       <div>
-        <h2>Quick Start In 3 Steps</h2>
-        <p>A practical setup path that mirrors common Astro onboarding flow for new projects.</p>
-        <ol class="steps">
-          <li><strong>Step 1</strong>Create a new project using the official starter wizard.</li>
-          <li><strong>Step 2</strong>Run the local dev server and shape your page layout and components.</li>
-          <li><strong>Step 3</strong>Move markdown into content collections and publish with your preferred host.</li>
-        </ol>
-        <ul class="integration-list" aria-label="Popular Integrations">
-          <li class="integration-pill">React</li>
-          <li class="integration-pill">Vue</li>
-          <li class="integration-pill">Svelte</li>
-          <li class="integration-pill">Tailwind</li>
-          <li class="integration-pill">MDX</li>
-        </ul>
+        <h1>Your Notes</h1>
+        <p>Create, edit, and manage your notes. Entries are sorted by latest update time.</p>
       </div>
-      <div class="terminal" role="region" aria-label="Astro CLI Commands">
-        <div class="terminal-head">
-          <span class="terminal-dot pink" aria-hidden="true"></span>
-          <span class="terminal-dot gold" aria-hidden="true"></span>
-          <span class="terminal-dot blue" aria-hidden="true"></span>
-          Astro CLI
-        </div>
-        <pre><code><span class="command-line">npm create astro@latest</span>
-<span class="command-line">cd my-astro-site</span>
-<span class="command-line">npm run dev</span>
-<span class="command-line">npm run build</span></code></pre>
-      </div>
+      <div class="count-badge">Total Notes: <span id="post-count">0</span></div>
     </section>
 
-    <section id="features" class="section reveal delay-3">
-      <div class="section-head">
-        <h2>Why This Layout Works</h2>
-        <p>Structured the way Astro projects usually scale: hero, capability blocks, and content preview cards.</p>
-      </div>
-      <div class="grid">
-        <article class="feature-card">
-          <h3>Readable Typography</h3>
-          <p>Newsreader for headlines and Outfit for interface text keeps content editorial while UI stays crisp.</p>
-        </article>
-        <article class="feature-card">
-          <h3>Light Visual System</h3>
-          <p>Soft gradients and subtle grid texture create depth without dark-theme dependence.</p>
-        </article>
-        <article class="feature-card">
-          <h3>Responsive Composition</h3>
-          <p>Desktop shows two-column hero and card grids, while mobile collapses to single-column reading flow.</p>
-        </article>
-      </div>
-    </section>
+    <div id="saved-status" class="status" hidden>Note saved successfully.</div>
 
-    <section id="posts" class="section reveal delay-4">
-      <div class="section-head">
-        <h2>Latest Posts</h2>
-        <p>Placeholder post entries to match a typical Astro blog homepage section.</p>
+    <main>
+      <div id="posts-list" class="posts" hidden></div>
+      <div id="empty-state" class="empty" hidden>
+        No notes yet. Click <strong>Add Note</strong> to create your first entry.
       </div>
-      <div class="grid">
-        <article class="post-card">
-          <h3>Designing A Content-First Homepage</h3>
-          <p>How to organize hero, features, and post previews so readers scan quickly and stay oriented.</p>
-          <span class="post-meta">Guide - 6 min read</span>
-        </article>
-        <article class="post-card">
-          <h3>Astro Project Structure That Scales</h3>
-          <p>Split pages, components, and content collections with clear boundaries for long-term maintenance.</p>
-          <span class="post-meta">Architecture - 8 min read</span>
-        </article>
-        <article class="post-card">
-          <h3>Polished Motion Without Heavy JS</h3>
-          <p>Use lightweight CSS reveal effects to improve perceived quality while keeping performance high.</p>
-          <span class="post-meta">UI Motion - 5 min read</span>
-        </article>
-      </div>
-    </section>
-
-    <section id="resources" class="section reveal delay-5">
-      <div class="section-head">
-        <h2>Core Resources</h2>
-        <p>Keep these links in your starter homepage while your real content is still being written.</p>
-      </div>
-      <div class="grid">
-        <article class="feature-card">
-          <h3>Official Docs</h3>
-          <p>Concepts, API references, and deployment instructions from the Astro documentation site.</p>
-          <span class="post-meta">docs.astro.build</span>
-        </article>
-        <article class="feature-card">
-          <h3>Theme Gallery</h3>
-          <p>Browse production-ready themes and adapt their structure, typography, and page composition.</p>
-          <span class="post-meta">astro.build/themes</span>
-        </article>
-        <article class="feature-card">
-          <h3>Integrations</h3>
-          <p>Add React, Vue, Svelte, Tailwind, and other tools from Astro's integration ecosystem.</p>
-          <span class="post-meta">astro.build/integrations</span>
-        </article>
-      </div>
-    </section>
-    <section id="launch" class="callout reveal delay-6">
-      <div>
-        <h2>Ready To Turn This Into A Real Astro Project?</h2>
-        <p>Current page is pure HTML/CSS and already styled. Next step is migrating sections into Astro components and wiring markdown posts.</p>
-      </div>
-      <a class="btn primary" href="#quickstart">Open Setup Guide</a>
-    </section>
+    </main>
 
     <footer class="footer">
-      <span>&copy; 2026 Astro-Style Starter</span>
-      <span><a href="https://github.com/withastro/astro" target="_blank" rel="noreferrer">Reference: withastro/astro</a></span>
+      <span>&copy; 2026 Astro Notes</span>
+      <span><a href="./editor.html">Open Editor</a></span>
     </footer>
   </div>
+
+  <script src="./posts-store.js"></script>
+  <script>
+    (() => {
+      const listEl = document.getElementById("posts-list");
+      const emptyEl = document.getElementById("empty-state");
+      const countEl = document.getElementById("post-count");
+      const savedStatusEl = document.getElementById("saved-status");
+
+      init();
+
+      function init() {
+        showSavedStatusIfNeeded();
+        render();
+      }
+
+      function render() {
+        const posts = postStore.readPosts().sort((a, b) => Number(new Date(b.updatedAt)) - Number(new Date(a.updatedAt)));
+        countEl.textContent = String(posts.length);
+        listEl.innerHTML = "";
+
+        if (!posts.length) {
+          listEl.hidden = true;
+          emptyEl.hidden = false;
+          return;
+        }
+
+        emptyEl.hidden = true;
+        listEl.hidden = false;
+
+        const frag = document.createDocumentFragment();
+        posts.forEach((post) => {
+          const card = document.createElement("article");
+          card.className = "post-card";
+
+          const head = document.createElement("div");
+          head.className = "post-head";
+
+          const title = document.createElement("h2");
+          title.className = "post-title";
+          const titleLink = document.createElement("a");
+          titleLink.href = "./editor.html?id=" + encodeURIComponent(post.id);
+          titleLink.textContent = post.title || "Untitled";
+          title.appendChild(titleLink);
+
+          const updated = document.createElement("p");
+          updated.className = "post-updated";
+          updated.textContent = "Updated " + formatDate(post.updatedAt);
+
+          head.appendChild(title);
+          head.appendChild(updated);
+          card.appendChild(head);
+
+          const excerpt = document.createElement("p");
+          excerpt.className = "post-excerpt";
+          excerpt.textContent = buildExcerpt(post.content);
+          card.appendChild(excerpt);
+
+          const actions = document.createElement("div");
+          actions.className = "post-actions";
+
+          const editLink = document.createElement("a");
+          editLink.className = "btn";
+          editLink.href = "./editor.html?id=" + encodeURIComponent(post.id);
+          editLink.textContent = "Edit";
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.className = "btn btn-danger";
+          deleteBtn.textContent = "Delete";
+          deleteBtn.addEventListener("click", () => onDelete(post.id));
+
+          actions.appendChild(editLink);
+          actions.appendChild(deleteBtn);
+          card.appendChild(actions);
+
+          frag.appendChild(card);
+        });
+
+        listEl.appendChild(frag);
+      }
+
+      function onDelete(id) {
+        if (!window.confirm("Delete this note?")) return;
+        postStore.deletePost(id);
+        render();
+      }
+
+      function showSavedStatusIfNeeded() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("saved") !== "1") return;
+        savedStatusEl.hidden = false;
+        window.history.replaceState({}, "", "./index.html");
+      }
+
+      function buildExcerpt(content) {
+        const plain = String(content || "")
+          .replace(/```[\s\S]*?```/g, " [code block] ")
+          .replace(/`([^`]+)`/g, "$1")
+          .replace(/[#>*_-]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        return plain ? plain.slice(0, 180) + (plain.length > 180 ? "..." : "") : "No content yet.";
+      }
+
+      function formatDate(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "Unknown";
+        return date.toLocaleString();
+      }
+    })();
+  </script>
 </body>
 </html>

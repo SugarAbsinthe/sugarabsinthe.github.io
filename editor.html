@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astro Notes - Editor</title>
+  <meta name="description" content="Edit note title and body, including code blocks, and save back to the main page.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,600;6..72,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f8ff;
+      --bg-soft: #f2f7ff;
+      --card: #ffffff;
+      --text: #181a2a;
+      --muted: #5a607f;
+      --line: #d8ddf2;
+      --line-strong: #bec8ee;
+      --primary: #6c4dff;
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
+      --max-width: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Outfit", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(42rem 24rem at -10% -10%, rgba(113, 132, 255, 0.2), transparent 62%),
+        radial-gradient(30rem 18rem at 110% -8%, rgba(13, 160, 255, 0.18), transparent 60%),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 56%, var(--bg-soft) 100%);
+    }
+
+    .page {
+      width: min(var(--max-width), 92vw);
+      margin: 0 auto;
+      padding: 1.2rem 0 2.6rem;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px rgba(72, 87, 164, 0.1);
+      padding: 0.46rem 0.6rem;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: var(--muted);
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 0.38rem 0.72rem;
+    }
+
+    .back-link:hover {
+      color: var(--text);
+      border-color: var(--line-strong);
+      background: #fff;
+    }
+
+    .mode-badge {
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.36rem 0.65rem;
+    }
+
+    .editor-shell {
+      margin-top: 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 0.88rem;
+    }
+
+    .title-row {
+      display: grid;
+      gap: 0.32rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .title-input {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 1.08rem;
+      font-weight: 700;
+      padding: 0.58rem 0.66rem;
+    }
+
+    .helper {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.52;
+      margin: 0.15rem 0 0;
+    }
+
+    .layout {
+      margin-top: 0.65rem;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
+      gap: 0.62rem;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: #fff;
+      padding: 0.62rem;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel h2 {
+      margin: 0 0 0.48rem;
+      font-family: "Newsreader", serif;
+      font-size: 1.24rem;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+
+    .content-input {
+      width: 100%;
+      flex: 1;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: #fbfcff;
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.56;
+      resize: vertical;
+      min-height: 320px;
+      padding: 0.62rem;
+    }
+
+    .preview {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fcfdff;
+      padding: 0.62rem;
+      overflow: auto;
+      line-height: 1.62;
+      font-size: 0.9rem;
+      color: #2a2f4a;
+    }
+
+    .preview h1,
+    .preview h2,
+    .preview h3 {
+      margin: 0.72rem 0 0.4rem;
+      line-height: 1.24;
+      color: var(--text);
+    }
+
+    .preview h1 {
+      font-family: "Newsreader", serif;
+      font-size: 1.52rem;
+    }
+
+    .preview h2 {
+      font-family: "Newsreader", serif;
+      font-size: 1.3rem;
+    }
+
+    .preview h3 {
+      font-size: 1.08rem;
+    }
+
+    .preview p {
+      margin: 0.48rem 0;
+      color: #2f3554;
+    }
+
+    .preview ul {
+      margin: 0.42rem 0 0.42rem 1.2rem;
+      padding: 0;
+    }
+
+    .preview code {
+      background: #f2f4ff;
+      border: 1px solid #d9def8;
+      border-radius: 6px;
+      padding: 0.05rem 0.28rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82em;
+      color: #364287;
+    }
+
+    .preview pre.code-block {
+      margin: 0.6rem 0;
+      padding: 0.62rem;
+      background: #11152a;
+      border: 1px solid #2c3a6d;
+      border-radius: 10px;
+      color: #eaf0ff;
+      overflow-x: auto;
+    }
+
+    .preview pre.code-block code {
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0;
+      font-size: 0.83rem;
+    }
+
+    .preview .code-lang {
+      display: inline-block;
+      margin-bottom: 0.34rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #9cb6ff;
+      font-weight: 700;
+    }
+
+    .preview-empty {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.56;
+    }
+
+    .actions {
+      margin-top: 0.65rem;
+      display: flex;
+      gap: 0.44rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.44rem 0.7rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      border-color: transparent;
+      background: linear-gradient(120deg, var(--primary) 0%, #5f8bff 100%);
+      color: #fff;
+      box-shadow: 0 8px 16px rgba(108, 77, 255, 0.22);
+    }
+
+    .status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      min-height: 1.2em;
+    }
+
+    .status.error {
+      color: #b42e51;
+    }
+
+    .status.success {
+      color: #2f7a4e;
+    }
+
+    .title-input:focus-visible,
+    .content-input:focus-visible,
+    .btn:focus-visible,
+    .back-link:focus-visible {
+      outline: 3px solid rgba(13, 160, 255, 0.35);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        min-height: 320px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        border-radius: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="back-link" href="./index.html">Back To Notes</a>
+      <div id="mode-badge" class="mode-badge">New Note</div>
+    </header>
+
+    <main class="editor-shell">
+      <div class="title-row">
+        <label class="label" for="title-input">Title</label>
+        <input id="title-input" class="title-input" type="text" maxlength="200" placeholder="Write your post title..." required>
+        <p class="helper">Body supports free-form text and code blocks. Example: ```js ... ```</p>
+      </div>
+
+      <div class="layout">
+        <section class="panel">
+          <h2>Editor</h2>
+          <textarea id="content-input" class="content-input" placeholder="# Heading&#10;&#10;Write your content here...&#10;&#10;```js&#10;console.log('Hello Astro');&#10;```"></textarea>
+        </section>
+
+        <section class="panel">
+          <h2>Live Preview</h2>
+          <div id="preview" class="preview"></div>
+        </section>
+      </div>
+
+      <div class="actions">
+        <button id="save-btn" class="btn btn-primary" type="button">Save And Return</button>
+        <a class="btn" href="./index.html">Cancel</a>
+        <p id="status" class="status"></p>
+      </div>
+    </main>
+  </div>
+
+  <script src="./markdown-renderer.js"></script>
+  <script src="./posts-store.js"></script>
+  <script>
+    (() => {
+      const titleInput = document.getElementById("title-input");
+      const contentInput = document.getElementById("content-input");
+      const previewEl = document.getElementById("preview");
+      const saveBtn = document.getElementById("save-btn");
+      const statusEl = document.getElementById("status");
+      const modeBadgeEl = document.getElementById("mode-badge");
+
+      const params = new URLSearchParams(window.location.search);
+      const postId = params.get("id") || "";
+      let existingPost = null;
+
+      init();
+
+      function init() {
+        if (postId) {
+          existingPost = postStore.getPostById(postId);
+        }
+
+        if (existingPost) {
+          modeBadgeEl.textContent = "Edit Note";
+          titleInput.value = existingPost.title;
+          contentInput.value = existingPost.content;
+        } else {
+          modeBadgeEl.textContent = "New Note";
+        }
+
+        renderPreview();
+        contentInput.addEventListener("input", renderPreview);
+        titleInput.addEventListener("input", renderPreview);
+        saveBtn.addEventListener("click", onSave);
+        window.addEventListener("keydown", onKeydown);
+      }
+
+      function onSave() {
+        const title = titleInput.value.trim();
+        const content = contentInput.value;
+
+        if (!title) {
+          setStatus("Title is required.", "error");
+          titleInput.focus();
+          return;
+        }
+
+        postStore.upsertPost({
+          id: existingPost ? existingPost.id : undefined,
+          title,
+          content,
+          createdAt: existingPost ? existingPost.createdAt : undefined
+        });
+
+        setStatus("Saved. Returning to notes...", "success");
+        window.setTimeout(() => {
+          window.location.href = "./index.html?saved=1";
+        }, 220);
+      }
+
+      function onKeydown(event) {
+        const isSave = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s";
+        if (!isSave) return;
+        event.preventDefault();
+        onSave();
+      }
+
+      function setStatus(message, type) {
+        statusEl.className = "status";
+        if (type === "error") statusEl.classList.add("error");
+        if (type === "success") statusEl.classList.add("success");
+        statusEl.textContent = message;
+      }
+
+      function renderPreview() {
+        const title = titleInput.value.trim();
+        const content = contentInput.value;
+
+        if (!title && !content.trim()) {
+          previewEl.innerHTML = '<p class="preview-empty">Preview will appear here as you type.</p>';
+          return;
+        }
+
+        const titleHtml = title ? "<h1>" + safeEscape(title) + "</h1>" : "";
+        const renderedBody = window.markdownRenderer && typeof window.markdownRenderer.render === "function"
+          ? window.markdownRenderer.render(content)
+          : "<p>" + safeEscape(content).replace(/\n/g, "<br>") + "</p>";
+        previewEl.innerHTML = titleHtml + renderedBody;
+      }
+
+      function safeEscape(value) {
+        if (window.markdownRenderer && typeof window.markdownRenderer.escapeHtml === "function") {
+          return window.markdownRenderer.escapeHtml(value);
+        }
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+    })();
+  </script>
+</body>
+</html>

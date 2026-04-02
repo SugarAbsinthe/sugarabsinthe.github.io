@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astro Notes - Editor</title>
-  <meta name="description" content="Edit note title and body, including code blocks, and save back to the main page.">
+  <title>SugarAbsinthe - Note Editor</title>
+  <meta name="description" content="Large writing editor for creating and updating notes.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,600;6..72,700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
       --radius-lg: 20px;
       --radius-md: 12px;
       --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
-      --max-width: 1120px;
+      --max-width: 1280px;
     }
 
     * {
@@ -44,9 +44,9 @@
     }
 
     .page {
-      width: min(var(--max-width), 92vw);
+      width: min(var(--max-width), 94vw);
       margin: 0 auto;
-      padding: 1.2rem 0 2.6rem;
+      padding: 1.2rem 0 2.4rem;
     }
 
     .topbar {
@@ -56,9 +56,37 @@
       gap: 0.8rem;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.92);
       box-shadow: 0 10px 24px rgba(72, 87, 164, 0.1);
       padding: 0.46rem 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      text-decoration: none;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 0.2rem 0.45rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-mark {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, var(--primary) 0%, #5f8bff 100%);
+      box-shadow: 0 8px 14px rgba(108, 77, 255, 0.25);
+      display: inline-block;
+    }
+
+    .brand-text {
+      font-family: "Newsreader", serif;
+      font-size: 1.14rem;
     }
 
     .back-link {
@@ -93,13 +121,28 @@
       border-radius: var(--radius-lg);
       background: #fff;
       box-shadow: var(--shadow);
-      padding: 0.88rem;
+      padding: 1rem;
+    }
+
+    .heading {
+      margin: 0;
+      font-family: "Newsreader", serif;
+      font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+      line-height: 1.06;
+      letter-spacing: -0.01em;
+    }
+
+    .sub {
+      margin: 0.38rem 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
     }
 
     .title-row {
+      margin-top: 0.8rem;
       display: grid;
-      gap: 0.32rem;
-      margin-bottom: 0.6rem;
+      gap: 0.34rem;
     }
 
     .label {
@@ -117,148 +160,40 @@
       background: #fff;
       color: var(--text);
       font: inherit;
-      font-size: 1.08rem;
+      font-size: 1.14rem;
       font-weight: 700;
-      padding: 0.58rem 0.66rem;
+      padding: 0.62rem 0.72rem;
     }
 
-    .helper {
+    .content-row {
+      margin-top: 0.7rem;
+      display: grid;
+      gap: 0.34rem;
+    }
+
+    .hint {
+      margin: 0;
       color: var(--muted);
       font-size: 0.82rem;
-      line-height: 1.52;
-      margin: 0.15rem 0 0;
-    }
-
-    .layout {
-      margin-top: 0.65rem;
-      display: grid;
-      grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
-      gap: 0.62rem;
-    }
-
-    .panel {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-md);
-      background: #fff;
-      padding: 0.62rem;
-      min-height: 420px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .panel h2 {
-      margin: 0 0 0.48rem;
-      font-family: "Newsreader", serif;
-      font-size: 1.24rem;
-      line-height: 1.1;
-      letter-spacing: -0.01em;
+      line-height: 1.55;
     }
 
     .content-input {
       width: 100%;
-      flex: 1;
       border: 1px solid var(--line-strong);
-      border-radius: 10px;
+      border-radius: 12px;
       background: #fbfcff;
       color: var(--text);
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.85rem;
-      line-height: 1.56;
-      resize: vertical;
-      min-height: 320px;
-      padding: 0.62rem;
-    }
-
-    .preview {
-      flex: 1;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fcfdff;
-      padding: 0.62rem;
-      overflow: auto;
-      line-height: 1.62;
       font-size: 0.9rem;
-      color: #2a2f4a;
-    }
-
-    .preview h1,
-    .preview h2,
-    .preview h3 {
-      margin: 0.72rem 0 0.4rem;
-      line-height: 1.24;
-      color: var(--text);
-    }
-
-    .preview h1 {
-      font-family: "Newsreader", serif;
-      font-size: 1.52rem;
-    }
-
-    .preview h2 {
-      font-family: "Newsreader", serif;
-      font-size: 1.3rem;
-    }
-
-    .preview h3 {
-      font-size: 1.08rem;
-    }
-
-    .preview p {
-      margin: 0.48rem 0;
-      color: #2f3554;
-    }
-
-    .preview ul {
-      margin: 0.42rem 0 0.42rem 1.2rem;
-      padding: 0;
-    }
-
-    .preview code {
-      background: #f2f4ff;
-      border: 1px solid #d9def8;
-      border-radius: 6px;
-      padding: 0.05rem 0.28rem;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.82em;
-      color: #364287;
-    }
-
-    .preview pre.code-block {
-      margin: 0.6rem 0;
-      padding: 0.62rem;
-      background: #11152a;
-      border: 1px solid #2c3a6d;
-      border-radius: 10px;
-      color: #eaf0ff;
-      overflow-x: auto;
-    }
-
-    .preview pre.code-block code {
-      background: none;
-      border: none;
-      color: inherit;
-      padding: 0;
-      font-size: 0.83rem;
-    }
-
-    .preview .code-lang {
-      display: inline-block;
-      margin-bottom: 0.34rem;
-      font-size: 0.68rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #9cb6ff;
-      font-weight: 700;
-    }
-
-    .preview-empty {
-      color: var(--muted);
-      font-size: 0.86rem;
-      line-height: 1.56;
+      line-height: 1.62;
+      resize: vertical;
+      min-height: 74vh;
+      padding: 0.74rem;
     }
 
     .actions {
-      margin-top: 0.65rem;
+      margin-top: 0.72rem;
       display: flex;
       gap: 0.44rem;
       flex-wrap: wrap;
@@ -273,7 +208,7 @@
       text-decoration: none;
       font-size: 0.82rem;
       font-weight: 700;
-      padding: 0.44rem 0.7rem;
+      padding: 0.46rem 0.72rem;
       cursor: pointer;
     }
 
@@ -303,19 +238,10 @@
     .title-input:focus-visible,
     .content-input:focus-visible,
     .btn:focus-visible,
-    .back-link:focus-visible {
+    .back-link:focus-visible,
+    .brand:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
       outline-offset: 2px;
-    }
-
-    @media (max-width: 920px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .panel {
-        min-height: 320px;
-      }
     }
 
     @media (max-width: 720px) {
@@ -324,33 +250,41 @@
         align-items: flex-start;
         border-radius: 16px;
       }
+
+      .editor-shell {
+        padding: 0.85rem;
+      }
+
+      .content-input {
+        min-height: 64vh;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <header class="topbar">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">SugarAbsinthe</span>
+      </a>
       <a class="back-link" href="./index.html">Back To Notes</a>
       <div id="mode-badge" class="mode-badge">New Note</div>
     </header>
 
     <main class="editor-shell">
+      <h1 class="heading">Editor</h1>
+      <p class="sub">Write freely here. This page is intentionally focused on writing only.</p>
+
       <div class="title-row">
         <label class="label" for="title-input">Title</label>
-        <input id="title-input" class="title-input" type="text" maxlength="200" placeholder="Write your post title..." required>
-        <p class="helper">Body supports free-form text and code blocks. Example: ```js ... ```</p>
+        <input id="title-input" class="title-input" type="text" maxlength="200" placeholder="Write your note title..." required>
       </div>
 
-      <div class="layout">
-        <section class="panel">
-          <h2>Editor</h2>
-          <textarea id="content-input" class="content-input" placeholder="# Heading&#10;&#10;Write your content here...&#10;&#10;```js&#10;console.log('Hello Astro');&#10;```"></textarea>
-        </section>
-
-        <section class="panel">
-          <h2>Live Preview</h2>
-          <div id="preview" class="preview"></div>
-        </section>
+      <div class="content-row">
+        <label class="label" for="content-input">Body</label>
+        <p class="hint">Supports plain text, Markdown, and code blocks like <code>```js</code>.</p>
+        <textarea id="content-input" class="content-input" placeholder="# Heading&#10;&#10;Write your content here...&#10;&#10;```js&#10;console.log('Hello');&#10;```"></textarea>
       </div>
 
       <div class="actions">
@@ -361,13 +295,11 @@
     </main>
   </div>
 
-  <script src="./markdown-renderer.js"></script>
   <script src="./posts-store.js"></script>
   <script>
     (() => {
       const titleInput = document.getElementById("title-input");
       const contentInput = document.getElementById("content-input");
-      const previewEl = document.getElementById("preview");
       const saveBtn = document.getElementById("save-btn");
       const statusEl = document.getElementById("status");
       const modeBadgeEl = document.getElementById("mode-badge");
@@ -391,9 +323,6 @@
           modeBadgeEl.textContent = "New Note";
         }
 
-        renderPreview();
-        contentInput.addEventListener("input", renderPreview);
-        titleInput.addEventListener("input", renderPreview);
         saveBtn.addEventListener("click", onSave);
         window.addEventListener("keydown", onKeydown);
       }
@@ -433,34 +362,6 @@
         if (type === "error") statusEl.classList.add("error");
         if (type === "success") statusEl.classList.add("success");
         statusEl.textContent = message;
-      }
-
-      function renderPreview() {
-        const title = titleInput.value.trim();
-        const content = contentInput.value;
-
-        if (!title && !content.trim()) {
-          previewEl.innerHTML = '<p class="preview-empty">Preview will appear here as you type.</p>';
-          return;
-        }
-
-        const titleHtml = title ? "<h1>" + safeEscape(title) + "</h1>" : "";
-        const renderedBody = window.markdownRenderer && typeof window.markdownRenderer.render === "function"
-          ? window.markdownRenderer.render(content)
-          : "<p>" + safeEscape(content).replace(/\n/g, "<br>") + "</p>";
-        previewEl.innerHTML = titleHtml + renderedBody;
-      }
-
-      function safeEscape(value) {
-        if (window.markdownRenderer && typeof window.markdownRenderer.escapeHtml === "function") {
-          return window.markdownRenderer.escapeHtml(value);
-        }
-        return String(value)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/\"/g, "&quot;")
-          .replace(/'/g, "&#39;");
       }
     })();
   </script>

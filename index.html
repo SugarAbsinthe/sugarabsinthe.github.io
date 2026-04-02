@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astro Blog - Notes</title>
+  <title>SugarAbsinthe - Notes</title>
   <meta name="description" content="Simple notes list page with add, delete, and edit workflows.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
       --radius-lg: 20px;
       --radius-md: 12px;
       --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
-      --max-width: 1040px;
+      --max-width: 1100px;
     }
 
     * {
@@ -107,28 +107,36 @@
       border-radius: var(--radius-lg);
       background: linear-gradient(125deg, #ffffff 0%, #f7f7ff 62%, #f1f7ff 100%);
       box-shadow: var(--shadow);
-      padding: 1rem 1.05rem;
-      display: flex;
-      justify-content: space-between;
-      gap: 0.8rem;
-      flex-wrap: wrap;
-      align-items: flex-end;
+      padding: 1.45rem 1.4rem;
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 0.95rem;
+      align-items: stretch;
+    }
+
+    .hero-kicker {
+      margin: 0;
+      color: var(--primary);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
     }
 
     .hero h1 {
-      margin: 0;
+      margin: 0.15rem 0 0;
       font-family: "Newsreader", serif;
-      font-size: clamp(1.7rem, 4.4vw, 2.6rem);
-      line-height: 1.05;
-      letter-spacing: -0.01em;
+      font-size: clamp(2.25rem, 5.6vw, 3.7rem);
+      line-height: 0.98;
+      letter-spacing: -0.02em;
     }
 
     .hero p {
-      margin: 0.55rem 0 0;
+      margin: 0.62rem 0 0;
       color: var(--muted);
-      line-height: 1.56;
+      line-height: 1.62;
       max-width: 62ch;
-      font-size: 0.92rem;
+      font-size: 0.95rem;
     }
 
     .count-badge {
@@ -136,9 +144,52 @@
       border-radius: 999px;
       background: #fff;
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       padding: 0.38rem 0.66rem;
+      display: inline-block;
+      margin-top: 0.72rem;
+    }
+
+    .hero-profile {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: #fff;
+      padding: 0.84rem;
+      display: grid;
+      align-content: start;
+      gap: 0.52rem;
+    }
+
+    .hero-profile h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+    }
+
+    .hero-profile p {
+      margin: 0;
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .profile-list {
+      margin: 0.1rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.3rem;
+    }
+
+    .profile-list li {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fdfdff;
+      padding: 0.36rem 0.5rem;
+      color: #3b4368;
+      font-size: 0.8rem;
+      font-weight: 600;
     }
 
     .status {
@@ -281,7 +332,8 @@
       }
 
       .hero {
-        padding: 0.9rem;
+        padding: 0.95rem;
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -291,17 +343,27 @@
     <header class="topbar">
       <a class="brand" href="./index.html">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">Astro Notes</span>
+        <span class="brand-text">SugarAbsinthe</span>
       </a>
       <a class="primary-link" href="./editor.html">+ Add Note</a>
     </header>
 
     <section class="hero">
       <div>
+        <p class="hero-kicker">Personal Workspace</p>
         <h1>Your Notes</h1>
-        <p>Create, edit, and manage your notes. Entries are sorted by latest update time.</p>
+        <p>Track your learning, drafts, and ideas here. Notes are sorted by latest update time so your newest work stays on top.</p>
+        <div class="count-badge">Total Notes: <span id="post-count">0</span></div>
       </div>
-      <div class="count-badge">Total Notes: <span id="post-count">0</span></div>
+      <aside class="hero-profile">
+        <h2>About SugarAbsinthe</h2>
+        <p>This area is reserved for your personalized intro. Edit this text in <code>index.html</code> any time.</p>
+        <ul class="profile-list">
+          <li>Focus: mobile / frontend / dev tools</li>
+          <li>Current goal: publish notes every week</li>
+          <li>Format: markdown + practical code snippets</li>
+        </ul>
+      </aside>
     </section>
 
     <div id="saved-status" class="status" hidden>Note saved successfully.</div>
@@ -314,7 +376,7 @@
     </main>
 
     <footer class="footer">
-      <span>&copy; 2026 Astro Notes</span>
+      <span>&copy; 2026 SugarAbsinthe</span>
       <span><a href="./editor.html">Open Editor</a></span>
     </footer>
   </div>

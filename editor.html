@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
   <style>
     :root {
       --bg: #f8f8ff;
@@ -332,6 +333,10 @@
       min-height: 150px;
     }
 
+    .doc-block-code .field-input {
+      max-width: 240px;
+    }
+
     .code-top {
       display: flex;
       justify-content: space-between;
@@ -345,6 +350,62 @@
       color: var(--muted);
       font-size: 0.8rem;
       font-weight: 600;
+    }
+
+    .code-editor-shell {
+      position: relative;
+      border: 1px solid #293760;
+      border-radius: 10px;
+      background: #0c1427;
+      overflow: hidden;
+      min-height: 180px;
+    }
+
+    .code-highlight {
+      margin: 0;
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: auto;
+      padding: 0.64rem 0.72rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      white-space: pre;
+      color: #e8efff;
+    }
+
+    .code-highlight code {
+      display: block;
+      min-height: 100%;
+    }
+
+    .code-highlight .hljs {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    .code-input-layer {
+      position: relative;
+      z-index: 1;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: transparent;
+      caret-color: #f8fbff;
+      padding: 0.64rem 0.72rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      min-height: 180px;
+      resize: vertical;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    .code-input-layer::selection {
+      background: rgba(132, 167, 255, 0.35);
     }
 
     .doc-block-table {
@@ -573,6 +634,7 @@
   </div>
 
   <script src="./posts-store.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script>
     (() => {
       const titleInput = document.getElementById("title-input");
@@ -633,7 +695,18 @@
         if (type === "paragraph") return { id: blockId, type, text: String((seed && seed.text) || "") };
         if (type === "heading") return { id: blockId, type, level: normalizeHeadingLevel(seed && seed.level), text: String((seed && seed.text) || "") };
         if (type === "quote") return { id: blockId, type, text: String((seed && seed.text) || "") };
-        if (type === "code") return { id: blockId, type, lang: String((seed && seed.lang) || "js"), code: String((seed && seed.code) || "") };
+        if (type === "code") {
+          const seedLang = String((seed && seed.lang) || "").trim();
+          return {
+            id: blockId,
+            type,
+            lang: seedLang,
+            code: String((seed && seed.code) || ""),
+            langManual: Boolean(seedLang),
+            detectedLang: seedLang || "",
+            height: normalizeCodeHeight(seed && seed.height)
+          };
+        }
         if (type === "table") return { id: blockId, type, cells: normalizeTableCells(seed && seed.cells) };
         return { id: blockId, type: "paragraph", text: "" };
       }
@@ -860,32 +933,84 @@
           const langInput = document.createElement("input");
           langInput.type = "text";
           langInput.className = "field-input";
-          langInput.placeholder = "Language (e.g. js, python, cpp)";
-          langInput.value = block.lang || "";
-          langInput.style.maxWidth = "280px";
+          langInput.placeholder = "Auto detect (override manually)";
+          langInput.value = block.langManual ? (block.lang || "") : "";
           langInput.addEventListener("focus", () => {
             activeBlockId = block.id;
           });
           langInput.addEventListener("input", () => {
-            block.lang = langInput.value;
+            const manual = normalizeLanguageAlias(langInput.value);
+            block.lang = manual;
+            block.langManual = Boolean(manual);
+            renderCodePreview();
           });
 
           const hint = document.createElement("p");
           hint.className = "code-hint";
-          hint.textContent = "Code area auto-expands while typing.";
+          hint.textContent = "Auto detect language + syntax highlighting.";
 
           top.appendChild(langInput);
           top.appendChild(hint);
 
           const codeArea = createTextarea(block.code, "Write code here...");
-          codeArea.style.minHeight = "160px";
+          codeArea.classList.add("code-input-layer");
+          codeArea.dataset.keepHeight = "true";
+          codeArea.spellcheck = false;
+          codeArea.style.minHeight = "180px";
+          codeArea.style.height = normalizeCodeHeight(block.height) + "px";
           codeArea.dataset.focusTarget = "true";
+
+          const codeShell = document.createElement("div");
+          codeShell.className = "code-editor-shell";
+
+          const codeHighlight = document.createElement("pre");
+          codeHighlight.className = "code-highlight";
+          const codePreview = document.createElement("code");
+          codeHighlight.appendChild(codePreview);
+
+          codeShell.appendChild(codeHighlight);
+          codeShell.appendChild(codeArea);
+
+          function syncCodeScroll() {
+            codeHighlight.scrollTop = codeArea.scrollTop;
+            codeHighlight.scrollLeft = codeArea.scrollLeft;
+          }
+
+          function renderCodePreview() {
+            const codeText = codeArea.value || "";
+            const preferred = block.langManual ? block.lang : "";
+            const highlighted = highlightCode(codeText, preferred);
+            codePreview.innerHTML = highlighted.html || "<span></span>";
+
+            block.code = codeText;
+            block.detectedLang = highlighted.language || "";
+            if (!block.langManual) {
+              block.lang = highlighted.language || "";
+              langInput.value = "";
+              langInput.placeholder = block.lang
+                ? ("Auto detect: " + block.lang)
+                : "Auto detect (override manually)";
+            }
+
+            block.height = normalizeCodeHeight(codeArea.offsetHeight);
+            hint.textContent = block.lang
+              ? ("Language: " + block.lang + (block.langManual ? " (manual)" : " (auto)") + " - Drag corner to resize")
+              : "Language: plain text (auto) - Drag corner to resize";
+            syncCodeScroll();
+          }
+
           codeArea.addEventListener("input", () => {
-            block.code = codeArea.value;
+            renderCodePreview();
+          });
+          codeArea.addEventListener("scroll", syncCodeScroll);
+          codeArea.addEventListener("mouseup", () => {
+            block.height = normalizeCodeHeight(codeArea.offsetHeight);
+            syncCodeScroll();
           });
 
           wrap.appendChild(top);
-          wrap.appendChild(codeArea);
+          wrap.appendChild(codeShell);
+          renderCodePreview();
           return wrap;
         }
 
@@ -964,9 +1089,14 @@
       }
 
       function autoGrowTextarea(textarea) {
+        const currentHeight = textarea.offsetHeight || 0;
         textarea.style.height = "auto";
         const minHeight = Number.parseInt(textarea.style.minHeight || "96", 10) || 96;
-        textarea.style.height = Math.max(minHeight, textarea.scrollHeight) + "px";
+        const keepHeight = textarea.dataset.keepHeight === "true";
+        const next = keepHeight
+          ? Math.max(minHeight, textarea.scrollHeight, currentHeight)
+          : Math.max(minHeight, textarea.scrollHeight);
+        textarea.style.height = next + "px";
       }
 
       function focusBlock(blockId) {
@@ -1099,6 +1229,87 @@
         if (type === "code") return "Code";
         if (type === "table") return "Table";
         return "Block";
+      }
+
+      function highlightCode(code, preferredLanguage) {
+        const raw = String(code || "");
+        if (!raw) {
+          return {
+            html: "",
+            language: normalizeLanguageAlias(preferredLanguage)
+          };
+        }
+
+        const selected = normalizeLanguageAlias(preferredLanguage);
+        const hljs = window.hljs;
+        if (hljs && typeof hljs.highlight === "function") {
+          if (selected && hljs.getLanguage(selected)) {
+            const result = hljs.highlight(raw, { language: selected, ignoreIllegals: true });
+            return { html: result.value, language: selected };
+          }
+
+          const autoResult = hljs.highlightAuto(raw);
+          const detected = normalizeLanguageAlias(autoResult.language) || detectLanguageFallback(raw);
+          return { html: autoResult.value, language: detected };
+        }
+
+        return {
+          html: escapeHtml(raw),
+          language: selected || detectLanguageFallback(raw)
+        };
+      }
+
+      function normalizeLanguageAlias(value) {
+        const input = String(value || "").trim().toLowerCase();
+        if (!input) return "";
+
+        const map = {
+          js: "javascript",
+          jsx: "javascript",
+          ts: "typescript",
+          tsx: "typescript",
+          py: "python",
+          "c++": "cpp",
+          cc: "cpp",
+          cxx: "cpp",
+          c: "c",
+          cs: "csharp",
+          "c#": "csharp",
+          sh: "bash",
+          shell: "bash",
+          zsh: "bash",
+          md: "markdown",
+          yml: "yaml",
+          html: "xml"
+        };
+
+        return map[input] || input;
+      }
+
+      function detectLanguageFallback(code) {
+        const text = String(code || "");
+        if (!text.trim()) return "";
+        if (/#include\s*<|std::|cout\s*<</.test(text)) return "cpp";
+        if (/^\s*def\s+\w+\(|print\(|import\s+\w+/m.test(text)) return "python";
+        if (/function\s+\w+\(|console\.log|=>/.test(text)) return "javascript";
+        if (/<\/?[a-z][\s\S]*>/i.test(text)) return "xml";
+        if (/SELECT|INSERT|UPDATE|DELETE|FROM|WHERE/i.test(text)) return "sql";
+        return "";
+      }
+
+      function normalizeCodeHeight(value) {
+        const num = Number(value);
+        if (!Number.isFinite(num)) return 220;
+        return Math.max(180, Math.min(1200, Math.round(num)));
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
       }
 
       function markdownTableToCells(text) {

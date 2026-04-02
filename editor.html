@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SugarAbsinthe - Note Editor</title>
-  <meta name="description" content="Large note editor with right-side insert tools.">
+  <meta name="description" content="Visual block editor with right-side insert tools.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -182,19 +182,214 @@
       gap: 0.4rem;
     }
 
-    .content-input {
+    .blocks-area {
+      display: grid;
+      gap: 0.58rem;
+      align-content: start;
+      min-height: 70vh;
+    }
+
+    .empty-canvas {
+      border: 1px dashed var(--line-strong);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--muted);
+      text-align: center;
+      padding: 1rem 0.9rem;
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .doc-block {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 0.62rem;
+      display: grid;
+      gap: 0.52rem;
+      box-shadow: 0 8px 20px rgba(49, 58, 118, 0.08);
+    }
+
+    .doc-block-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .block-tag {
+      border-radius: 999px;
+      padding: 0.22rem 0.52rem;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #354070;
+      background: #eef2ff;
+      border: 1px solid #d6defe;
+    }
+
+    .block-actions {
+      display: flex;
+      gap: 0.32rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .icon-btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      background: #fff;
+      color: #465083;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.22rem 0.5rem;
+      cursor: pointer;
+      line-height: 1.3;
+    }
+
+    .icon-btn:hover {
+      border-color: #9fafe6;
+      background: #f6f8ff;
+    }
+
+    .icon-btn.danger {
+      border-color: #efb1c4;
+      color: #c13c64;
+      background: #fff5f8;
+    }
+
+    .block-body {
+      display: grid;
+      gap: 0.46rem;
+    }
+
+    .field-input,
+    .field-textarea,
+    .field-select {
       width: 100%;
       border: 1px solid var(--line-strong);
       border-radius: 10px;
       background: #fff;
       color: var(--text);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.98rem;
-      line-height: 1.7;
-      padding: 0.9rem;
+      font: inherit;
+    }
+
+    .field-input {
+      padding: 0.56rem 0.64rem;
+      font-size: 0.96rem;
+      font-weight: 600;
+    }
+
+    .field-select {
+      padding: 0.42rem 0.5rem;
+      font-size: 0.92rem;
+      font-weight: 700;
+      width: auto;
+      min-width: 92px;
+    }
+
+    .field-textarea {
       resize: none;
       overflow: hidden;
-      min-height: 70vh;
+      padding: 0.62rem 0.68rem;
+      font-size: 0.96rem;
+      line-height: 1.65;
+      min-height: 94px;
+    }
+
+    .heading-row {
+      display: flex;
+      gap: 0.42rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .doc-block-heading {
+      border-left: 4px solid #96a9ff;
+    }
+
+    .doc-block-quote {
+      background: linear-gradient(90deg, #f9fbff 0%, #ffffff 45%);
+      border-left: 4px solid #8ab3ff;
+    }
+
+    .doc-block-quote .field-textarea {
+      font-style: italic;
+    }
+
+    .doc-block-code {
+      border-left: 4px solid #7c68e8;
+      background: linear-gradient(120deg, #fcfbff 0%, #ffffff 58%);
+    }
+
+    .doc-block-code .field-textarea {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #12182b;
+      border-color: #293760;
+      color: #e8efff;
+      min-height: 150px;
+    }
+
+    .code-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .code-hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .doc-block-table {
+      border-left: 4px solid #4db8a4;
+      background: linear-gradient(120deg, #f6fffb 0%, #ffffff 62%);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .table-grid {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 420px;
+    }
+
+    .table-grid td {
+      border: 1px solid #dfe6f7;
+      padding: 0;
+    }
+
+    .table-cell {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font: inherit;
+      color: var(--text);
+      font-size: 0.88rem;
+      padding: 0.44rem 0.52rem;
+    }
+
+    .table-grid tr:first-child .table-cell {
+      background: #f5fbff;
+      font-weight: 700;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 0.34rem;
+      flex-wrap: wrap;
     }
 
     .hint {
@@ -284,9 +479,13 @@
     .status.success { color: #2f7a4e; }
 
     .title-input:focus-visible,
-    .content-input:focus-visible,
+    .field-input:focus-visible,
+    .field-textarea:focus-visible,
+    .field-select:focus-visible,
+    .table-cell:focus-visible,
     .btn:focus-visible,
     .tool-btn:focus-visible,
+    .icon-btn:focus-visible,
     .back-link:focus-visible,
     .brand:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
@@ -318,8 +517,12 @@
         min-height: 70vh;
       }
 
-      .content-input {
+      .blocks-area {
         min-height: 58vh;
+      }
+
+      .table-grid {
+        min-width: 320px;
       }
     }
   </style>
@@ -337,7 +540,7 @@
 
     <main class="editor-shell">
       <h1 class="heading">Editor</h1>
-      <p class="sub">Write in one large body area. Tools on the right insert components directly into the body at your cursor position.</p>
+      <p class="sub">Use visual blocks like document software. Insert from the right and edit each block directly.</p>
 
       <div class="title-row">
         <label class="label" for="title-input">Title</label>
@@ -346,13 +549,13 @@
 
       <div class="workspace">
         <section class="body-panel">
-          <p class="hint">Tip: place your cursor where you want, then click a tool to insert that component directly into the body text.</p>
-          <textarea id="content-input" class="content-input" placeholder="# Heading&#10;&#10;Write your content here..."></textarea>
+          <p class="hint">Click inside any block, then use the right toolbar to insert the next block below it.</p>
+          <div id="blocks-area" class="blocks-area"></div>
         </section>
 
         <aside class="toolbar">
           <h2>Components</h2>
-          <p>Insert templates into body at the cursor position.</p>
+          <p>Insert a visual component as an independent block.</p>
           <button class="tool-btn" type="button" data-add-type="paragraph">+ Paragraph</button>
           <button class="tool-btn" type="button" data-add-type="heading">+ Heading</button>
           <button class="tool-btn" type="button" data-add-type="quote">+ Quote</button>
@@ -373,7 +576,7 @@
   <script>
     (() => {
       const titleInput = document.getElementById("title-input");
-      const contentInput = document.getElementById("content-input");
+      const blocksArea = document.getElementById("blocks-area");
       const saveBtn = document.getElementById("save-btn");
       const statusEl = document.getElementById("status");
       const modeBadgeEl = document.getElementById("mode-badge");
@@ -382,6 +585,8 @@
       const params = new URLSearchParams(window.location.search);
       const postId = params.get("id") || "";
       let existingPost = null;
+      let blocks = [];
+      let activeBlockId = "";
 
       init();
 
@@ -393,81 +598,398 @@
         if (existingPost) {
           modeBadgeEl.textContent = "Edit Note";
           titleInput.value = existingPost.title;
-          contentInput.value = resolveExistingContent(existingPost);
+          blocks = restoreBlocks(existingPost);
         } else {
           modeBadgeEl.textContent = "New Note";
-          contentInput.value = "";
+          blocks = [createBlock("paragraph")];
         }
 
-        autoGrowTextarea();
-        contentInput.addEventListener("input", autoGrowTextarea);
+        renderBlocks();
 
         addButtons.forEach((btn) => {
-          btn.addEventListener("click", () => insertTemplate(btn.dataset.addType || "paragraph"));
+          btn.addEventListener("click", () => addBlock(btn.dataset.addType || "paragraph"));
         });
 
+        blocksArea.addEventListener("click", onBlockActionClick);
         saveBtn.addEventListener("click", onSave);
         window.addEventListener("keydown", onKeydown);
       }
 
-      function resolveExistingContent(post) {
-        if (typeof post.content === "string" && post.content.trim()) return post.content;
-        if (Array.isArray(post.blocks) && post.blocks.length) return blocksToMarkdown(post.blocks);
-        return "";
+      function restoreBlocks(post) {
+        if (Array.isArray(post.blocks) && post.blocks.length) {
+          const fromBlocks = post.blocks.map((item) => storedToEditorBlock(item)).filter(Boolean);
+          if (fromBlocks.length) return fromBlocks;
+        }
+
+        if (typeof post.content === "string" && post.content.trim()) {
+          return [createBlock("paragraph", { text: post.content })];
+        }
+
+        return [createBlock("paragraph")];
       }
 
-      function insertTemplate(type) {
-        const snippet = templateForType(type);
-        if (!snippet) return;
-
-        const start = contentInput.selectionStart;
-        const end = contentInput.selectionEnd;
-        const value = contentInput.value;
-
-        const before = value.slice(0, start);
-        const after = value.slice(end);
-
-        const needsLeadingLineBreak = before.length > 0 && !before.endsWith("\n");
-        const prefix = needsLeadingLineBreak ? "\n\n" : "";
-        const insertion = prefix + snippet;
-
-        contentInput.value = before + insertion + after;
-
-        const cursor = before.length + insertion.length;
-        contentInput.focus();
-        contentInput.selectionStart = cursor;
-        contentInput.selectionEnd = cursor;
-        autoGrowTextarea();
+      function createBlock(type, seed) {
+        const blockId = createId();
+        if (type === "paragraph") return { id: blockId, type, text: String((seed && seed.text) || "") };
+        if (type === "heading") return { id: blockId, type, level: normalizeHeadingLevel(seed && seed.level), text: String((seed && seed.text) || "") };
+        if (type === "quote") return { id: blockId, type, text: String((seed && seed.text) || "") };
+        if (type === "code") return { id: blockId, type, lang: String((seed && seed.lang) || "js"), code: String((seed && seed.code) || "") };
+        if (type === "table") return { id: blockId, type, cells: normalizeTableCells(seed && seed.cells) };
+        return { id: blockId, type: "paragraph", text: "" };
       }
 
-      function templateForType(type) {
-        if (type === "paragraph") {
-          return "New paragraph...";
-        }
-        if (type === "heading") {
-          return "## New Heading";
-        }
-        if (type === "quote") {
-          return "> Quote text...";
-        }
-        if (type === "code") {
-          return "```js\nconsole.log('Hello world');\n```";
-        }
-        if (type === "table") {
-          return "| Column A | Column B |\n| --- | --- |\n| Value 1 | Value 2 |";
-        }
-        return "";
+      function addBlock(type) {
+        const newBlock = createBlock(type);
+        const activeIndex = blocks.findIndex((item) => item.id === activeBlockId);
+        const insertAt = activeIndex >= 0 ? activeIndex + 1 : blocks.length;
+        blocks.splice(insertAt, 0, newBlock);
+        activeBlockId = newBlock.id;
+        renderBlocks();
+        focusBlock(newBlock.id);
       }
 
-      function autoGrowTextarea() {
-        contentInput.style.height = "auto";
-        const nextHeight = Math.max(460, contentInput.scrollHeight);
-        contentInput.style.height = nextHeight + "px";
+      function onBlockActionClick(event) {
+        const button = event.target.closest("[data-action]");
+        if (!button) return;
+
+        const card = button.closest("[data-block-id]");
+        if (!card) return;
+
+        const blockId = card.dataset.blockId;
+        const action = button.dataset.action || "";
+        const blockIndex = blocks.findIndex((item) => item.id === blockId);
+        if (blockIndex < 0) return;
+
+        if (action === "up" && blockIndex > 0) {
+          swapBlocks(blockIndex, blockIndex - 1);
+          activeBlockId = blockId;
+          renderBlocks();
+          focusBlock(blockId);
+          return;
+        }
+
+        if (action === "down" && blockIndex < blocks.length - 1) {
+          swapBlocks(blockIndex, blockIndex + 1);
+          activeBlockId = blockId;
+          renderBlocks();
+          focusBlock(blockId);
+          return;
+        }
+
+        if (action === "delete") {
+          blocks.splice(blockIndex, 1);
+          if (!blocks.length) {
+            blocks = [createBlock("paragraph")];
+          }
+          const nextIndex = Math.min(blockIndex, blocks.length - 1);
+          activeBlockId = blocks[nextIndex].id;
+          renderBlocks();
+          focusBlock(activeBlockId);
+          return;
+        }
+
+        if (action === "table-add-row") {
+          const block = blocks[blockIndex];
+          const cols = tableColumnCount(block.cells);
+          block.cells.push(new Array(cols).fill(""));
+          activeBlockId = block.id;
+          renderBlocks();
+          focusBlock(block.id);
+          return;
+        }
+
+        if (action === "table-add-col") {
+          const block = blocks[blockIndex];
+          block.cells.forEach((row) => row.push(""));
+          activeBlockId = block.id;
+          renderBlocks();
+          focusBlock(block.id);
+          return;
+        }
+
+        if (action === "table-del-row") {
+          const block = blocks[blockIndex];
+          if (block.cells.length > 2) {
+            block.cells.pop();
+            activeBlockId = block.id;
+            renderBlocks();
+            focusBlock(block.id);
+          }
+          return;
+        }
+
+        if (action === "table-del-col") {
+          const block = blocks[blockIndex];
+          if (tableColumnCount(block.cells) > 1) {
+            block.cells.forEach((row) => row.pop());
+            activeBlockId = block.id;
+            renderBlocks();
+            focusBlock(block.id);
+          }
+        }
+      }
+
+      function swapBlocks(a, b) {
+        const temp = blocks[a];
+        blocks[a] = blocks[b];
+        blocks[b] = temp;
+      }
+
+      function renderBlocks() {
+        blocksArea.innerHTML = "";
+
+        if (!blocks.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty-canvas";
+          empty.textContent = "No blocks yet. Use the right toolbar to insert your first component.";
+          blocksArea.appendChild(empty);
+          return;
+        }
+
+        const frag = document.createDocumentFragment();
+        blocks.forEach((block, index) => {
+          const card = document.createElement("article");
+          card.className = "doc-block doc-block-" + block.type;
+          card.dataset.blockId = block.id;
+
+          const header = document.createElement("div");
+          header.className = "doc-block-header";
+
+          const tag = document.createElement("span");
+          tag.className = "block-tag";
+          tag.textContent = blockLabel(block.type);
+
+          const actions = document.createElement("div");
+          actions.className = "block-actions";
+
+          const upBtn = document.createElement("button");
+          upBtn.type = "button";
+          upBtn.className = "icon-btn";
+          upBtn.dataset.action = "up";
+          upBtn.textContent = "Up";
+          if (index === 0) upBtn.disabled = true;
+
+          const downBtn = document.createElement("button");
+          downBtn.type = "button";
+          downBtn.className = "icon-btn";
+          downBtn.dataset.action = "down";
+          downBtn.textContent = "Down";
+          if (index === blocks.length - 1) downBtn.disabled = true;
+
+          const delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.className = "icon-btn danger";
+          delBtn.dataset.action = "delete";
+          delBtn.textContent = "Delete";
+
+          actions.appendChild(upBtn);
+          actions.appendChild(downBtn);
+          actions.appendChild(delBtn);
+          header.appendChild(tag);
+          header.appendChild(actions);
+
+          const body = createBlockBody(block);
+          card.appendChild(header);
+          card.appendChild(body);
+          frag.appendChild(card);
+        });
+
+        blocksArea.appendChild(frag);
+      }
+
+      function createBlockBody(block) {
+        const wrap = document.createElement("div");
+        wrap.className = "block-body";
+
+        if (block.type === "paragraph") {
+          const textarea = createTextarea(block.text, "Write paragraph...");
+          textarea.addEventListener("input", () => {
+            block.text = textarea.value;
+          });
+          wrap.appendChild(textarea);
+          return wrap;
+        }
+
+        if (block.type === "heading") {
+          const row = document.createElement("div");
+          row.className = "heading-row";
+
+          const levelSelect = document.createElement("select");
+          levelSelect.className = "field-select";
+          levelSelect.innerHTML = "<option value='1'>H1</option><option value='2'>H2</option><option value='3'>H3</option>";
+          levelSelect.value = String(normalizeHeadingLevel(block.level));
+          levelSelect.addEventListener("focus", () => {
+            activeBlockId = block.id;
+          });
+          levelSelect.addEventListener("change", () => {
+            block.level = normalizeHeadingLevel(levelSelect.value);
+          });
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.className = "field-input";
+          input.placeholder = "Heading text...";
+          input.value = block.text || "";
+          input.dataset.focusTarget = "true";
+          input.addEventListener("focus", () => {
+            activeBlockId = block.id;
+          });
+          input.addEventListener("input", () => {
+            block.text = input.value;
+          });
+
+          row.appendChild(levelSelect);
+          row.appendChild(input);
+          wrap.appendChild(row);
+          return wrap;
+        }
+
+        if (block.type === "quote") {
+          const textarea = createTextarea(block.text, "Quote...");
+          textarea.addEventListener("input", () => {
+            block.text = textarea.value;
+          });
+          wrap.appendChild(textarea);
+          return wrap;
+        }
+
+        if (block.type === "code") {
+          const top = document.createElement("div");
+          top.className = "code-top";
+
+          const langInput = document.createElement("input");
+          langInput.type = "text";
+          langInput.className = "field-input";
+          langInput.placeholder = "Language (e.g. js, python, cpp)";
+          langInput.value = block.lang || "";
+          langInput.style.maxWidth = "280px";
+          langInput.addEventListener("focus", () => {
+            activeBlockId = block.id;
+          });
+          langInput.addEventListener("input", () => {
+            block.lang = langInput.value;
+          });
+
+          const hint = document.createElement("p");
+          hint.className = "code-hint";
+          hint.textContent = "Code area auto-expands while typing.";
+
+          top.appendChild(langInput);
+          top.appendChild(hint);
+
+          const codeArea = createTextarea(block.code, "Write code here...");
+          codeArea.style.minHeight = "160px";
+          codeArea.dataset.focusTarget = "true";
+          codeArea.addEventListener("input", () => {
+            block.code = codeArea.value;
+          });
+
+          wrap.appendChild(top);
+          wrap.appendChild(codeArea);
+          return wrap;
+        }
+
+        if (block.type === "table") {
+          const tableWrap = document.createElement("div");
+          tableWrap.className = "table-wrap";
+
+          const table = document.createElement("table");
+          table.className = "table-grid";
+          const tbody = document.createElement("tbody");
+
+          const cells = normalizeTableCells(block.cells);
+          block.cells = cells;
+
+          cells.forEach((row, rowIndex) => {
+            const tr = document.createElement("tr");
+            row.forEach((value, colIndex) => {
+              const td = document.createElement("td");
+              const input = document.createElement("input");
+              input.type = "text";
+              input.className = "table-cell";
+              input.value = value;
+              input.placeholder = rowIndex === 0 ? "Header" : "Value";
+              if (rowIndex === 1 && colIndex === 0) {
+                input.dataset.focusTarget = "true";
+              }
+              input.addEventListener("focus", () => {
+                activeBlockId = block.id;
+              });
+              input.addEventListener("input", () => {
+                block.cells[rowIndex][colIndex] = input.value;
+              });
+              td.appendChild(input);
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+
+          table.appendChild(tbody);
+          tableWrap.appendChild(table);
+
+          const actions = document.createElement("div");
+          actions.className = "table-actions";
+          actions.innerHTML = [
+            "<button class='icon-btn' type='button' data-action='table-add-row'>+ Row</button>",
+            "<button class='icon-btn' type='button' data-action='table-add-col'>+ Column</button>",
+            "<button class='icon-btn' type='button' data-action='table-del-row'>- Row</button>",
+            "<button class='icon-btn' type='button' data-action='table-del-col'>- Column</button>"
+          ].join("");
+
+          wrap.appendChild(tableWrap);
+          wrap.appendChild(actions);
+          return wrap;
+        }
+
+        const fallback = createTextarea("", "Unsupported block...");
+        wrap.appendChild(fallback);
+        return wrap;
+      }
+
+      function createTextarea(value, placeholder) {
+        const textarea = document.createElement("textarea");
+        textarea.className = "field-textarea";
+        textarea.placeholder = placeholder;
+        textarea.value = value || "";
+        textarea.dataset.focusTarget = "true";
+        textarea.addEventListener("focus", () => {
+          const card = textarea.closest("[data-block-id]");
+          if (card) activeBlockId = card.dataset.blockId;
+        });
+        textarea.addEventListener("input", () => {
+          autoGrowTextarea(textarea);
+        });
+        autoGrowTextarea(textarea);
+        return textarea;
+      }
+
+      function autoGrowTextarea(textarea) {
+        textarea.style.height = "auto";
+        const minHeight = Number.parseInt(textarea.style.minHeight || "96", 10) || 96;
+        textarea.style.height = Math.max(minHeight, textarea.scrollHeight) + "px";
+      }
+
+      function focusBlock(blockId) {
+        window.setTimeout(() => {
+          const target = blocksArea.querySelector("[data-block-id='" + blockId + "'] [data-focus-target='true']");
+          if (!target) return;
+          target.focus();
+          if (target.select && target.tagName === "INPUT") target.select();
+        }, 0);
+      }
+
+      function storedToEditorBlock(block) {
+        if (!block || typeof block !== "object") return null;
+        if (block.type === "paragraph") return createBlock("paragraph", { text: block.text });
+        if (block.type === "heading") return createBlock("heading", { text: block.text, level: block.level });
+        if (block.type === "quote") return createBlock("quote", { text: block.text });
+        if (block.type === "code") return createBlock("code", { lang: block.lang, code: block.code });
+        if (block.type === "table") return createBlock("table", { cells: markdownTableToCells(block.rows) });
+        return null;
       }
 
       function onSave() {
         const title = titleInput.value.trim();
-        const content = contentInput.value;
 
         if (!title) {
           setStatus("Title is required.", "error");
@@ -475,11 +997,18 @@
           return;
         }
 
+        const storedBlocks = blocks.map((item) => editorToStoredBlock(item)).filter(Boolean);
+        if (!storedBlocks.length) {
+          setStatus("Add at least one non-empty block.", "error");
+          return;
+        }
+
+        const content = blocksToMarkdown(storedBlocks);
         postStore.upsertPost({
           id: existingPost ? existingPost.id : undefined,
-          title,
-          content,
-          blocks: [],
+          title: title,
+          content: content,
+          blocks: storedBlocks,
           createdAt: existingPost ? existingPost.createdAt : undefined
         });
 
@@ -496,8 +1025,45 @@
         onSave();
       }
 
-      function blocksToMarkdown(blocks) {
-        return blocks
+      function editorToStoredBlock(block) {
+        if (!block || typeof block !== "object") return null;
+
+        if (block.type === "paragraph") {
+          const text = String(block.text || "").trim();
+          if (!text) return null;
+          return { type: "paragraph", text: text };
+        }
+
+        if (block.type === "heading") {
+          const text = String(block.text || "").trim();
+          if (!text) return null;
+          return { type: "heading", level: normalizeHeadingLevel(block.level), text: text };
+        }
+
+        if (block.type === "quote") {
+          const text = String(block.text || "").trim();
+          if (!text) return null;
+          return { type: "quote", text: text };
+        }
+
+        if (block.type === "code") {
+          const code = String(block.code || "");
+          const lang = String(block.lang || "").trim();
+          if (!code.trim()) return null;
+          return { type: "code", lang: lang, code: code };
+        }
+
+        if (block.type === "table") {
+          const cells = normalizeTableCells(block.cells);
+          if (!tableHasContent(cells)) return null;
+          return { type: "table", rows: cellsToMarkdownTable(cells) };
+        }
+
+        return null;
+      }
+
+      function blocksToMarkdown(storedBlocks) {
+        return storedBlocks
           .map((block) => blockToMarkdown(block))
           .filter((text) => text.trim().length > 0)
           .join("\n\n");
@@ -526,10 +1092,101 @@
         return "";
       }
 
+      function blockLabel(type) {
+        if (type === "paragraph") return "Paragraph";
+        if (type === "heading") return "Heading";
+        if (type === "quote") return "Quote";
+        if (type === "code") return "Code";
+        if (type === "table") return "Table";
+        return "Block";
+      }
+
+      function markdownTableToCells(text) {
+        const lines = String(text || "")
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line);
+
+        if (lines.length < 2) return normalizeTableCells();
+
+        const parsed = lines.map((line) => parseTableRow(line));
+        if (!parsed.length) return normalizeTableCells();
+
+        const rows = [];
+        rows.push(parsed[0]);
+
+        for (let i = 1; i < parsed.length; i += 1) {
+          if (i === 1 && isSeparatorRow(parsed[i])) continue;
+          rows.push(parsed[i]);
+        }
+
+        return normalizeTableCells(rows);
+      }
+
+      function parseTableRow(line) {
+        const cleaned = String(line || "").replace(/^\|/, "").replace(/\|$/, "");
+        return cleaned.split("|").map((cell) => cell.trim());
+      }
+
+      function isSeparatorRow(row) {
+        return row.every((cell) => /^:?-{2,}:?$/.test(cell.replace(/\s+/g, "")));
+      }
+
+      function cellsToMarkdownTable(cells) {
+        const normalized = normalizeTableCells(cells);
+        const cols = tableColumnCount(normalized);
+        const head = normalized[0];
+        const body = normalized.slice(1);
+        const divider = new Array(cols).fill("---");
+
+        const lines = [head, divider].concat(body).map((row) => {
+          const cellsLine = row.map((cell) => String(cell || "").replace(/\|/g, "\\|"));
+          return "| " + cellsLine.join(" | ") + " |";
+        });
+
+        return lines.join("\n");
+      }
+
+      function normalizeTableCells(cells) {
+        if (!Array.isArray(cells) || !cells.length) {
+          return [
+            ["Column 1", "Column 2"],
+            ["", ""]
+          ];
+        }
+
+        const rows = cells.map((row) => (Array.isArray(row) ? row.map((cell) => String(cell || "")) : []));
+        const maxCols = Math.max(2, ...rows.map((row) => row.length || 0));
+        const normalized = rows.map((row) => {
+          const next = row.slice(0, maxCols);
+          while (next.length < maxCols) next.push("");
+          return next;
+        });
+
+        if (normalized.length < 2) {
+          normalized.push(new Array(maxCols).fill(""));
+        }
+
+        return normalized;
+      }
+
+      function tableColumnCount(cells) {
+        if (!Array.isArray(cells) || !cells.length) return 2;
+        return Math.max(1, ...cells.map((row) => (Array.isArray(row) ? row.length : 0)));
+      }
+
+      function tableHasContent(cells) {
+        return cells.some((row) => row.some((cell) => String(cell || "").trim().length > 0));
+      }
+
       function normalizeHeadingLevel(value) {
         const level = Number(value);
         if (level === 1 || level === 2 || level === 3) return level;
         return 2;
+      }
+
+      function createId() {
+        return "b_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
       }
 
       function setStatus(message, type) {

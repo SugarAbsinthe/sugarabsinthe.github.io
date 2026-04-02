@@ -480,9 +480,6 @@
 
       function buildExcerpt(content) {
         const plain = String(content || "")
-          .replace(/<style[\s\S]*?<\/style>/gi, " ")
-          .replace(/<script[\s\S]*?<\/script>/gi, " ")
-          .replace(/<[^>]+>/g, " ")
           .replace(/```[\s\S]*?```/g, " [code block] ")
           .replace(/`([^`]+)`/g, "$1")
           .replace(/[#>*_-]/g, " ")

@@ -696,14 +696,13 @@
         if (type === "heading") return { id: blockId, type, level: normalizeHeadingLevel(seed && seed.level), text: String((seed && seed.text) || "") };
         if (type === "quote") return { id: blockId, type, text: String((seed && seed.text) || "") };
         if (type === "code") {
-          const seedLang = String((seed && seed.lang) || "").trim();
           return {
             id: blockId,
             type,
-            lang: seedLang,
+            lang: "cpp",
             code: String((seed && seed.code) || ""),
-            langManual: Boolean(seedLang),
-            detectedLang: seedLang || "",
+            langManual: true,
+            detectedLang: "cpp",
             height: normalizeCodeHeight(seed && seed.height)
           };
         }
@@ -933,21 +932,16 @@
           const langInput = document.createElement("input");
           langInput.type = "text";
           langInput.className = "field-input";
-          langInput.placeholder = "Auto detect (override manually)";
-          langInput.value = block.langManual ? (block.lang || "") : "";
+          langInput.value = "C++";
+          langInput.readOnly = true;
+          langInput.title = "Code blocks are fixed to C++";
           langInput.addEventListener("focus", () => {
             activeBlockId = block.id;
-          });
-          langInput.addEventListener("input", () => {
-            const manual = normalizeLanguageAlias(langInput.value);
-            block.lang = manual;
-            block.langManual = Boolean(manual);
-            renderCodePreview();
           });
 
           const hint = document.createElement("p");
           hint.className = "code-hint";
-          hint.textContent = "Auto detect language + syntax highlighting.";
+          hint.textContent = "Language fixed: C++ with syntax highlighting.";
 
           top.appendChild(langInput);
           top.appendChild(hint);
@@ -978,24 +972,17 @@
 
           function renderCodePreview() {
             const codeText = codeArea.value || "";
-            const preferred = block.langManual ? block.lang : "";
-            const highlighted = highlightCode(codeText, preferred);
+            const highlighted = highlightCode(codeText);
             codePreview.innerHTML = highlighted.html || "<span></span>";
 
             block.code = codeText;
-            block.detectedLang = highlighted.language || "";
-            if (!block.langManual) {
-              block.lang = highlighted.language || "";
-              langInput.value = "";
-              langInput.placeholder = block.lang
-                ? ("Auto detect: " + block.lang)
-                : "Auto detect (override manually)";
-            }
+            block.lang = "cpp";
+            block.langManual = true;
+            block.detectedLang = "cpp";
+            langInput.value = "C++";
 
             block.height = normalizeCodeHeight(codeArea.offsetHeight);
-            hint.textContent = block.lang
-              ? ("Language: " + block.lang + (block.langManual ? " (manual)" : " (auto)") + " - Drag corner to resize")
-              : "Language: plain text (auto) - Drag corner to resize";
+            hint.textContent = "Language: cpp (fixed) - Drag corner to resize";
             syncCodeScroll();
           }
 
@@ -1231,70 +1218,28 @@
         return "Block";
       }
 
-      function highlightCode(code, preferredLanguage) {
+      function highlightCode(code) {
         const raw = String(code || "");
         if (!raw) {
           return {
             html: "",
-            language: normalizeLanguageAlias(preferredLanguage)
+            language: "cpp"
           };
         }
 
-        const selected = normalizeLanguageAlias(preferredLanguage);
+        const selected = "cpp";
         const hljs = window.hljs;
         if (hljs && typeof hljs.highlight === "function") {
-          if (selected && hljs.getLanguage(selected)) {
+          if (hljs.getLanguage(selected)) {
             const result = hljs.highlight(raw, { language: selected, ignoreIllegals: true });
             return { html: result.value, language: selected };
           }
-
-          const autoResult = hljs.highlightAuto(raw);
-          const detected = normalizeLanguageAlias(autoResult.language) || detectLanguageFallback(raw);
-          return { html: autoResult.value, language: detected };
         }
 
         return {
           html: escapeHtml(raw),
-          language: selected || detectLanguageFallback(raw)
+          language: selected
         };
-      }
-
-      function normalizeLanguageAlias(value) {
-        const input = String(value || "").trim().toLowerCase();
-        if (!input) return "";
-
-        const map = {
-          js: "javascript",
-          jsx: "javascript",
-          ts: "typescript",
-          tsx: "typescript",
-          py: "python",
-          "c++": "cpp",
-          cc: "cpp",
-          cxx: "cpp",
-          c: "c",
-          cs: "csharp",
-          "c#": "csharp",
-          sh: "bash",
-          shell: "bash",
-          zsh: "bash",
-          md: "markdown",
-          yml: "yaml",
-          html: "xml"
-        };
-
-        return map[input] || input;
-      }
-
-      function detectLanguageFallback(code) {
-        const text = String(code || "");
-        if (!text.trim()) return "";
-        if (/#include\s*<|std::|cout\s*<</.test(text)) return "cpp";
-        if (/^\s*def\s+\w+\(|print\(|import\s+\w+/m.test(text)) return "python";
-        if (/function\s+\w+\(|console\.log|=>/.test(text)) return "javascript";
-        if (/<\/?[a-z][\s\S]*>/i.test(text)) return "xml";
-        if (/SELECT|INSERT|UPDATE|DELETE|FROM|WHERE/i.test(text)) return "sql";
-        return "";
       }
 
       function normalizeCodeHeight(value) {

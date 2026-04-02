@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SugarAbsinthe - Note Editor</title>
-  <meta name="description" content="Component-based note editor with a right-side block toolbar.">
+  <meta name="description" content="Large body editor with right-side component tools.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
       --radius-lg: 20px;
       --radius-md: 12px;
       --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
-      --max-width: 1460px;
+      --max-width: 1420px;
     }
 
     * {
@@ -177,82 +177,61 @@
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
       background: #fbfcff;
-      min-height: 76vh;
+      min-height: 78vh;
       padding: 0.72rem;
       display: grid;
       align-content: start;
-      gap: 0.56rem;
+      gap: 0.52rem;
     }
 
-    .body-empty {
-      border: 1px dashed var(--line-strong);
+    .block {
+      border: 1px solid var(--line);
       border-radius: 10px;
       background: #fff;
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.58;
-      padding: 0.78rem;
+      padding: 0.58rem;
+      display: grid;
+      gap: 0.38rem;
     }
 
-    .block-card {
-      border: 1px solid var(--line);
-      border-radius: 11px;
-      background: #fff;
-      padding: 0.62rem;
-      display: grid;
-      gap: 0.45rem;
+    .block.active {
+      border-color: #9fafe6;
+      box-shadow: 0 0 0 2px rgba(108, 77, 255, 0.1);
     }
 
     .block-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.35rem;
       flex-wrap: wrap;
     }
 
-    .block-type {
+    .block-tag {
       border: 1px solid #d3dcff;
       border-radius: 999px;
       background: #eef2ff;
       color: #3f4ea0;
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.18rem 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-
-    .mini-actions {
-      display: flex;
-      gap: 0.25rem;
-      flex-wrap: wrap;
-    }
-
-    .mini-btn {
-      border: 1px solid var(--line-strong);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--muted);
       font-size: 0.72rem;
       font-weight: 700;
-      padding: 0.2rem 0.42rem;
-      cursor: pointer;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 0.14rem 0.48rem;
     }
 
-    .mini-btn:hover {
-      color: var(--text);
-    }
-
-    .mini-btn.delete {
-      color: var(--danger);
-      border-color: #efb1c4;
+    .block-remove {
+      border: 1px solid #efb1c4;
+      border-radius: 8px;
       background: #fff5f8;
+      color: var(--danger);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.16rem 0.46rem;
+      cursor: pointer;
     }
 
     .field {
       display: grid;
-      gap: 0.26rem;
+      gap: 0.24rem;
     }
 
     .field label {
@@ -261,6 +240,13 @@
       letter-spacing: 0.03em;
       text-transform: uppercase;
       font-weight: 700;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 0.4rem;
+      align-items: center;
     }
 
     .field input,
@@ -272,20 +258,27 @@
       background: #fff;
       color: var(--text);
       font: inherit;
-      font-size: 0.9rem;
-      padding: 0.48rem 0.56rem;
+      font-size: 0.92rem;
+      padding: 0.5rem 0.56rem;
     }
 
     .field textarea {
       min-height: 110px;
       resize: vertical;
-      line-height: 1.56;
+      line-height: 1.58;
+    }
+
+    .field textarea.main-paragraph {
+      min-height: 58vh;
+      font-size: 0.98rem;
+      line-height: 1.68;
     }
 
     .field textarea.code-input {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 0.86rem;
-      min-height: 150px;
+      min-height: 140px;
+      line-height: 1.56;
     }
 
     .toolbar {
@@ -364,13 +357,8 @@
       min-height: 1.2em;
     }
 
-    .status.error {
-      color: #b42e51;
-    }
-
-    .status.success {
-      color: #2f7a4e;
-    }
+    .status.error { color: #b42e51; }
+    .status.success { color: #2f7a4e; }
 
     .title-input:focus-visible,
     .field input:focus-visible,
@@ -378,7 +366,7 @@
     .field textarea:focus-visible,
     .btn:focus-visible,
     .tool-btn:focus-visible,
-    .mini-btn:focus-visible,
+    .block-remove:focus-visible,
     .back-link:focus-visible,
     .brand:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
@@ -407,7 +395,15 @@
       }
 
       .body-panel {
-        min-height: 68vh;
+        min-height: 70vh;
+      }
+
+      .field textarea.main-paragraph {
+        min-height: 46vh;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -425,7 +421,7 @@
 
     <main class="editor-shell">
       <h1 class="heading">Editor</h1>
-      <p class="sub">Build your note with independent components. Add blocks from the right toolbar.</p>
+      <p class="sub">Keep writing in the large body area. Add components from the right and they appear directly below your current block.</p>
 
       <div class="title-row">
         <label class="label" for="title-input">Title</label>
@@ -433,16 +429,13 @@
       </div>
 
       <div class="workspace">
-        <section class="body-panel">
-          <div id="blocks-empty" class="body-empty" hidden>
-            No components yet. Use the right toolbar to add your first block.
-          </div>
+        <section id="body-panel" class="body-panel">
           <div id="blocks-container"></div>
         </section>
 
         <aside class="toolbar">
           <h2>Components</h2>
-          <p>Choose one block and it will appear as an independent section in the note body.</p>
+          <p>Click one to insert it below the block you are currently editing.</p>
           <button class="tool-btn" type="button" data-add-type="paragraph">+ Paragraph</button>
           <button class="tool-btn" type="button" data-add-type="heading">+ Heading</button>
           <button class="tool-btn" type="button" data-add-type="quote">+ Quote</button>
@@ -464,7 +457,6 @@
     (() => {
       const titleInput = document.getElementById("title-input");
       const blocksContainer = document.getElementById("blocks-container");
-      const blocksEmpty = document.getElementById("blocks-empty");
       const saveBtn = document.getElementById("save-btn");
       const statusEl = document.getElementById("status");
       const modeBadgeEl = document.getElementById("mode-badge");
@@ -473,7 +465,7 @@
       const params = new URLSearchParams(window.location.search);
       const postId = params.get("id") || "";
       let existingPost = null;
-      const state = { blocks: [] };
+      const state = { blocks: [], activeBlockId: "" };
 
       init();
 
@@ -489,6 +481,8 @@
           state.blocks = [createDefaultBlock("paragraph")];
         }
 
+        state.activeBlockId = state.blocks[0] ? state.blocks[0].id : "";
+
         addButtons.forEach((btn) => {
           btn.addEventListener("click", () => addBlock(btn.dataset.addType || "paragraph"));
         });
@@ -500,7 +494,7 @@
 
       function loadBlocksFromPost(post) {
         if (Array.isArray(post.blocks) && post.blocks.length) {
-          return sanitizeBlocks(post.blocks);
+          return sanitizeBlocksForEditor(post.blocks);
         }
         if (typeof post.content === "string" && post.content.trim()) {
           return [{ id: createId(), type: "paragraph", text: post.content.trim() }];
@@ -508,7 +502,7 @@
         return [createDefaultBlock("paragraph")];
       }
 
-      function sanitizeBlocks(blocks) {
+      function sanitizeBlocksForEditor(blocks) {
         return blocks
           .map((item) => {
             const type = normalizeType(item && item.type);
@@ -518,6 +512,21 @@
             if (type === "quote") return { id: createId(), type, text: String(item.text || "") };
             if (type === "code") return { id: createId(), type, lang: String(item.lang || ""), code: String(item.code || "") };
             if (type === "table") return { id: createId(), type, rows: String(item.rows || "") };
+            return null;
+          })
+          .filter(Boolean);
+      }
+
+      function sanitizeBlocksForSave(blocks) {
+        return blocks
+          .map((item) => {
+            const type = normalizeType(item && item.type);
+            if (!type) return null;
+            if (type === "paragraph") return { type, text: String(item.text || "") };
+            if (type === "heading") return { type, text: String(item.text || ""), level: normalizeHeadingLevel(item.level) };
+            if (type === "quote") return { type, text: String(item.text || "") };
+            if (type === "code") return { type, lang: String(item.lang || ""), code: String(item.code || "") };
+            if (type === "table") return { type, rows: String(item.rows || "") };
             return null;
           })
           .filter(Boolean);
@@ -534,29 +543,40 @@
       }
 
       function addBlock(type) {
-        state.blocks.push(createDefaultBlock(type));
+        const newBlock = createDefaultBlock(type);
+        const insertIndex = getInsertIndexAfterActive();
+        const next = state.blocks.slice();
+        next.splice(insertIndex, 0, newBlock);
+        state.blocks = next;
+        state.activeBlockId = newBlock.id;
         renderBlocks();
+        focusFirstInput(newBlock.id);
+      }
+
+      function getInsertIndexAfterActive() {
+        const index = state.blocks.findIndex((item) => item.id === state.activeBlockId);
+        if (index < 0) return state.blocks.length;
+        return index + 1;
       }
 
       function removeBlock(id) {
-        state.blocks = state.blocks.filter((item) => item.id !== id);
-        if (!state.blocks.length) {
-          state.blocks.push(createDefaultBlock("paragraph"));
-        }
-        renderBlocks();
-      }
-
-      function moveBlock(id, direction) {
         const index = state.blocks.findIndex((item) => item.id === id);
         if (index < 0) return;
-        const targetIndex = direction === "up" ? index - 1 : index + 1;
-        if (targetIndex < 0 || targetIndex >= state.blocks.length) return;
-        const next = state.blocks.slice();
-        const temp = next[index];
-        next[index] = next[targetIndex];
-        next[targetIndex] = temp;
+
+        if (state.blocks.length === 1) {
+          state.blocks = [createDefaultBlock("paragraph")];
+          state.activeBlockId = state.blocks[0].id;
+          renderBlocks();
+          focusFirstInput(state.activeBlockId);
+          return;
+        }
+
+        const next = state.blocks.filter((item) => item.id !== id);
         state.blocks = next;
+        const fallback = next[Math.min(index, next.length - 1)];
+        state.activeBlockId = fallback ? fallback.id : "";
         renderBlocks();
+        if (state.activeBlockId) focusFirstInput(state.activeBlockId);
       }
 
       function updateBlock(id, patch) {
@@ -565,135 +585,154 @@
 
       function renderBlocks() {
         blocksContainer.innerHTML = "";
-        blocksEmpty.hidden = state.blocks.length > 0;
-
         const frag = document.createDocumentFragment();
+
         state.blocks.forEach((block, index) => {
-          const card = document.createElement("article");
-          card.className = "block-card";
-          card.dataset.blockId = block.id;
+          const item = document.createElement("article");
+          item.className = "block";
+          if (block.id === state.activeBlockId) item.classList.add("active");
+          item.dataset.blockId = block.id;
+          item.addEventListener("focusin", () => {
+            state.activeBlockId = block.id;
+            refreshActiveStyles();
+          });
 
           const head = document.createElement("div");
           head.className = "block-head";
 
-          const type = document.createElement("span");
-          type.className = "block-type";
-          type.textContent = labelForType(block.type);
-
-          const actions = document.createElement("div");
-          actions.className = "mini-actions";
-
-          const upBtn = document.createElement("button");
-          upBtn.type = "button";
-          upBtn.className = "mini-btn";
-          upBtn.textContent = "Up";
-          upBtn.disabled = index === 0;
-          upBtn.addEventListener("click", () => moveBlock(block.id, "up"));
-
-          const downBtn = document.createElement("button");
-          downBtn.type = "button";
-          downBtn.className = "mini-btn";
-          downBtn.textContent = "Down";
-          downBtn.disabled = index === state.blocks.length - 1;
-          downBtn.addEventListener("click", () => moveBlock(block.id, "down"));
+          const tag = document.createElement("span");
+          tag.className = "block-tag";
+          tag.textContent = labelForType(block.type);
 
           const removeBtn = document.createElement("button");
           removeBtn.type = "button";
-          removeBtn.className = "mini-btn delete";
+          removeBtn.className = "block-remove";
           removeBtn.textContent = "Remove";
           removeBtn.addEventListener("click", () => removeBlock(block.id));
 
-          actions.appendChild(upBtn);
-          actions.appendChild(downBtn);
-          actions.appendChild(removeBtn);
-          head.appendChild(type);
-          head.appendChild(actions);
-          card.appendChild(head);
+          head.appendChild(tag);
+          head.appendChild(removeBtn);
+          item.appendChild(head);
 
-          renderBlockFields(block, card);
-          frag.appendChild(card);
+          renderBlockFields(block, index, item);
+          frag.appendChild(item);
         });
 
         blocksContainer.appendChild(frag);
       }
 
-      function renderBlockFields(block, card) {
+      function refreshActiveStyles() {
+        document.querySelectorAll(".block").forEach((node) => {
+          if (node.dataset.blockId === state.activeBlockId) {
+            node.classList.add("active");
+          } else {
+            node.classList.remove("active");
+          }
+        });
+      }
+
+      function renderBlockFields(block, index, container) {
         if (block.type === "paragraph") {
-          card.appendChild(createTextareaField("Text", block.text, (value) => updateBlock(block.id, { text: value })));
+          const textarea = createTextareaField("Text", block.text, (value) => updateBlock(block.id, { text: value }));
+          if (index === 0) textarea.classList.add("main-paragraph");
+          container.appendChild(wrapField("Text", textarea));
           return;
         }
 
         if (block.type === "heading") {
-          card.appendChild(createInputField("Heading Text", block.text, (value) => updateBlock(block.id, { text: value })));
-          card.appendChild(createSelectField("Heading Level", String(block.level || 2), [
+          const levelSelect = document.createElement("select");
+          [
             { label: "H1", value: "1" },
             { label: "H2", value: "2" },
             { label: "H3", value: "3" }
-          ], (value) => updateBlock(block.id, { level: normalizeHeadingLevel(value) })));
+          ].forEach((item) => {
+            const option = document.createElement("option");
+            option.value = item.value;
+            option.textContent = item.label;
+            if (Number(item.value) === normalizeHeadingLevel(block.level)) option.selected = true;
+            levelSelect.appendChild(option);
+          });
+          levelSelect.addEventListener("change", () => updateBlock(block.id, { level: normalizeHeadingLevel(levelSelect.value) }));
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = block.text || "";
+          input.placeholder = "Heading text...";
+          input.addEventListener("input", () => updateBlock(block.id, { text: input.value }));
+
+          const row = document.createElement("div");
+          row.className = "row";
+          row.appendChild(levelSelect);
+          row.appendChild(input);
+          container.appendChild(wrapField("Heading", row));
           return;
         }
 
         if (block.type === "quote") {
-          card.appendChild(createTextareaField("Quote", block.text, (value) => updateBlock(block.id, { text: value })));
+          const textarea = createTextareaField("Quote", block.text, (value) => updateBlock(block.id, { text: value }));
+          autoGrowTextarea(textarea, 110);
+          container.appendChild(wrapField("Quote", textarea));
           return;
         }
 
         if (block.type === "code") {
-          card.appendChild(createInputField("Language (optional)", block.lang, (value) => updateBlock(block.id, { lang: value })));
-          card.appendChild(createTextareaField("Code", block.code, (value) => updateBlock(block.id, { code: value }), true));
+          const langInput = document.createElement("input");
+          langInput.type = "text";
+          langInput.value = block.lang || "";
+          langInput.placeholder = "Language (optional)";
+          langInput.addEventListener("input", () => updateBlock(block.id, { lang: langInput.value }));
+
+          const codeTextarea = createTextareaField("Code", block.code, (value) => {
+            updateBlock(block.id, { code: value });
+            autoGrowTextarea(codeTextarea, 140);
+          });
+          codeTextarea.classList.add("code-input");
+          autoGrowTextarea(codeTextarea, 140);
+
+          container.appendChild(wrapField("Language", langInput));
+          container.appendChild(wrapField("Code", codeTextarea));
           return;
         }
 
         if (block.type === "table") {
-          card.appendChild(createTextareaField("Table Rows (use | between columns)", block.rows, (value) => updateBlock(block.id, { rows: value })));
+          const tableTextarea = createTextareaField("Rows", block.rows, (value) => {
+            updateBlock(block.id, { rows: value });
+            autoGrowTextarea(tableTextarea, 120);
+          });
+          tableTextarea.placeholder = "Column A | Column B\nValue 1 | Value 2";
+          autoGrowTextarea(tableTextarea, 120);
+          container.appendChild(wrapField("Table (use | between columns)", tableTextarea));
         }
       }
 
-      function createInputField(labelText, value, onInput) {
-        const wrap = document.createElement("div");
-        wrap.className = "field";
+      function wrapField(labelText, inputNode) {
+        const field = document.createElement("div");
+        field.className = "field";
         const label = document.createElement("label");
         label.textContent = labelText;
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = value || "";
-        input.addEventListener("input", () => onInput(input.value));
-        wrap.appendChild(label);
-        wrap.appendChild(input);
-        return wrap;
+        field.appendChild(label);
+        field.appendChild(inputNode);
+        return field;
       }
 
-      function createTextareaField(labelText, value, onInput, isCode) {
-        const wrap = document.createElement("div");
-        wrap.className = "field";
-        const label = document.createElement("label");
-        label.textContent = labelText;
+      function createTextareaField(labelText, value, onInput) {
         const textarea = document.createElement("textarea");
         textarea.value = value || "";
-        if (isCode) textarea.className = "code-input";
         textarea.addEventListener("input", () => onInput(textarea.value));
-        wrap.appendChild(label);
-        wrap.appendChild(textarea);
-        return wrap;
+        return textarea;
       }
 
-      function createSelectField(labelText, value, options, onChange) {
-        const wrap = document.createElement("div");
-        wrap.className = "field";
-        const label = document.createElement("label");
-        label.textContent = labelText;
-        const select = document.createElement("select");
-        options.forEach((opt) => {
-          const option = document.createElement("option");
-          option.value = opt.value;
-          option.textContent = opt.label;
-          if (opt.value === value) option.selected = true;
-          select.appendChild(option);
+      function focusFirstInput(blockId) {
+        window.requestAnimationFrame(() => {
+          const target = document.querySelector('[data-block-id="' + blockId + '"] textarea, [data-block-id="' + blockId + '"] input, [data-block-id="' + blockId + '"] select');
+          if (target) target.focus();
         });
-        select.addEventListener("change", () => onChange(select.value));
-        wrap.appendChild(label);
-        wrap.appendChild(select);
-        return wrap;
+      }
+
+      function autoGrowTextarea(textarea, minHeight) {
+        const minimum = Number(minHeight) || 100;
+        textarea.style.height = "auto";
+        textarea.style.height = Math.max(minimum, textarea.scrollHeight) + "px";
       }
 
       function onSave() {
@@ -704,14 +743,14 @@
           return;
         }
 
-        const normalizedBlocks = sanitizeBlocks(state.blocks);
-        const content = blocksToMarkdown(normalizedBlocks);
+        const blocksForSave = sanitizeBlocksForSave(state.blocks);
+        const content = blocksToMarkdown(blocksForSave);
 
         postStore.upsertPost({
           id: existingPost ? existingPost.id : undefined,
           title,
           content,
-          blocks: normalizedBlocks,
+          blocks: blocksForSave,
           createdAt: existingPost ? existingPost.createdAt : undefined
         });
 

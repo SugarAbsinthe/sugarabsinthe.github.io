@@ -116,6 +116,7 @@
       display: flex;
       gap: 0.45rem;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .btn {
@@ -140,6 +141,34 @@
       color: #fff;
     }
 
+    .font-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: #fff;
+      padding: 0.15rem;
+    }
+
+    .font-btn {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: #3a4470;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 0.28rem 0.52rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .font-btn.is-active {
+      border-color: #cdd8ff;
+      background: #eef2ff;
+      color: #253063;
+    }
+
     .layout {
       margin-top: 1rem;
       display: grid;
@@ -154,6 +183,19 @@
       background: var(--card);
       box-shadow: var(--shadow);
       padding: 1.15rem 1.2rem;
+      --reader-scale: 1;
+    }
+
+    .article.scale-s {
+      --reader-scale: 0.9;
+    }
+
+    .article.scale-m {
+      --reader-scale: 1;
+    }
+
+    .article.scale-l {
+      --reader-scale: 1.12;
     }
 
     .meta {
@@ -201,7 +243,7 @@
     .content p {
       margin: 0;
       white-space: pre-wrap;
-      font-size: 1.08rem;
+      font-size: calc(1.08rem * var(--reader-scale));
     }
 
     .content h1,
@@ -214,15 +256,15 @@
     }
 
     .content h1 {
-      font-size: 2rem;
+      font-size: calc(2rem * var(--reader-scale));
     }
 
     .content h2 {
-      font-size: 1.65rem;
+      font-size: calc(1.65rem * var(--reader-scale));
     }
 
     .content h3 {
-      font-size: 1.35rem;
+      font-size: calc(1.35rem * var(--reader-scale));
     }
 
     .content blockquote {
@@ -234,6 +276,7 @@
       color: #394066;
       font-style: italic;
       white-space: pre-wrap;
+      font-size: calc(1.02rem * var(--reader-scale));
     }
 
     .code-block {
@@ -278,7 +321,7 @@
       overflow: auto;
       padding: 0.72rem 0.78rem;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.94rem;
+      font-size: calc(0.94rem * var(--reader-scale));
       line-height: 1.65;
       background: #fff;
     }
@@ -301,7 +344,7 @@
       border: 1px solid #dfe6f7;
       padding: 0.44rem 0.54rem;
       text-align: left;
-      font-size: 0.9rem;
+      font-size: calc(0.9rem * var(--reader-scale));
       white-space: pre-wrap;
     }
 
@@ -444,6 +487,7 @@
     .copy-btn:focus-visible,
     .toc-item:focus-visible,
     .brand:focus-visible,
+    .font-btn:focus-visible,
     .to-top-btn:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
       outline-offset: 2px;
@@ -490,12 +534,17 @@
       </a>
       <div class="top-actions">
         <a class="btn" href="./index.html">Back To Notes</a>
+        <div class="font-switch" role="group" aria-label="Reading font size">
+          <button class="font-btn" type="button" data-font-size="s" aria-label="Small text">A-</button>
+          <button class="font-btn" type="button" data-font-size="m" aria-label="Medium text">A</button>
+          <button class="font-btn" type="button" data-font-size="l" aria-label="Large text">A+</button>
+        </div>
         <a id="edit-link" class="btn btn-primary" href="./editor.html">Edit Note</a>
       </div>
     </header>
 
     <main class="layout">
-      <article class="article">
+      <article id="article" class="article scale-m">
         <p id="meta" class="meta">Loading...</p>
         <h1 id="title" class="title">Loading note...</h1>
         <div id="tag-list" class="tag-list" hidden></div>
@@ -526,6 +575,7 @@
   <script>
     (() => {
       const progressBarEl = document.getElementById("progress-bar");
+      const articleEl = document.getElementById("article");
       const titleEl = document.getElementById("title");
       const metaEl = document.getElementById("meta");
       const messageEl = document.getElementById("message");
@@ -538,13 +588,17 @@
       const newerLinkEl = document.getElementById("newer-link");
       const olderLinkEl = document.getElementById("older-link");
       const toTopBtnEl = document.getElementById("to-top-btn");
+      const fontSizeButtons = Array.from(document.querySelectorAll("[data-font-size]"));
 
       const params = new URLSearchParams(window.location.search);
       const postId = params.get("id") || "";
+      const FONT_SIZE_KEY = "sugarabsinthe_reader_font_size_v1";
+      const FONT_SIZE_VALUES = ["s", "m", "l"];
 
       init();
 
       function init() {
+        initFontSizeControls();
         renderPage();
         bindScrollProgress();
         onViewportChanged();
@@ -833,6 +887,53 @@
         toTopBtnEl.addEventListener("click", () => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
+      }
+
+      function initFontSizeControls() {
+        const saved = readSavedFontSize();
+        applyFontSize(saved, false);
+
+        fontSizeButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const value = String(button.dataset.fontSize || "m");
+            applyFontSize(value, true);
+          });
+        });
+      }
+
+      function applyFontSize(value, save) {
+        const next = normalizeFontSize(value);
+        articleEl.classList.remove("scale-s", "scale-m", "scale-l");
+        articleEl.classList.add("scale-" + next);
+
+        fontSizeButtons.forEach((button) => {
+          const isActive = (button.dataset.fontSize || "") === next;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+
+        if (save) {
+          try {
+            window.localStorage.setItem(FONT_SIZE_KEY, next);
+          } catch {
+            // no-op
+          }
+        }
+      }
+
+      function readSavedFontSize() {
+        try {
+          const raw = window.localStorage.getItem(FONT_SIZE_KEY);
+          return normalizeFontSize(raw);
+        } catch {
+          return "m";
+        }
+      }
+
+      function normalizeFontSize(value) {
+        const next = String(value || "").trim().toLowerCase();
+        if (FONT_SIZE_VALUES.includes(next)) return next;
+        return "m";
       }
 
       function onViewportChanged() {

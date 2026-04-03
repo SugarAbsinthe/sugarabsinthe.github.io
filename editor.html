@@ -164,6 +164,18 @@
       padding: 0.7rem 0.82rem;
     }
 
+    .meta-input {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 0.58rem 0.68rem;
+    }
+
     .workspace {
       margin-top: 0.95rem;
       display: grid;
@@ -509,6 +521,14 @@
       align-items: center;
     }
 
+    .shortcut-hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
     .btn {
       border: 1px solid var(--line-strong);
       border-radius: 10px;
@@ -539,7 +559,32 @@
     .status.error { color: #b42e51; }
     .status.success { color: #2f7a4e; }
 
+    .toast {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      border: 1px solid #a9e1c3;
+      border-radius: 10px;
+      background: #f2fff8;
+      color: #256a45;
+      font-size: 0.86rem;
+      font-weight: 700;
+      box-shadow: 0 12px 26px rgba(25, 83, 56, 0.16);
+      padding: 0.56rem 0.72rem;
+      transform: translateY(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      z-index: 10;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
     .title-input:focus-visible,
+    .meta-input:focus-visible,
     .field-input:focus-visible,
     .field-textarea:focus-visible,
     .field-select:focus-visible,
@@ -608,6 +653,12 @@
         <input id="title-input" class="title-input" type="text" maxlength="200" placeholder="Write your note title..." required>
       </div>
 
+      <div class="title-row">
+        <label class="label" for="tags-input">Tags</label>
+        <input id="tags-input" class="meta-input" type="text" maxlength="240" placeholder="Use comma separated tags, e.g. css, performance">
+        <p class="hint">Tags are optional and help filter notes on homepage.</p>
+      </div>
+
       <div class="workspace">
         <section class="body-panel">
           <p class="hint">Click inside any block, then use the right toolbar to insert the next block below it.</p>
@@ -628,27 +679,37 @@
       <div class="actions">
         <button id="save-btn" class="btn btn-primary" type="button">Save And Return</button>
         <a class="btn" href="./index.html">Cancel</a>
+        <p class="shortcut-hint">Shortcut: Ctrl/Cmd + S</p>
         <p id="status" class="status"></p>
       </div>
     </main>
   </div>
+  <div id="toast" class="toast" hidden></div>
 
   <script src="./posts-store.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script>
     (() => {
       const titleInput = document.getElementById("title-input");
+      const tagsInput = document.getElementById("tags-input");
       const blocksArea = document.getElementById("blocks-area");
       const saveBtn = document.getElementById("save-btn");
       const statusEl = document.getElementById("status");
+      const toastEl = document.getElementById("toast");
       const modeBadgeEl = document.getElementById("mode-badge");
       const addButtons = Array.from(document.querySelectorAll("[data-add-type]"));
 
       const params = new URLSearchParams(window.location.search);
       const postId = params.get("id") || "";
+      const DRAFT_KEY_PREFIX = "astro_blog_editor_draft_v1_";
+      const draftKey = DRAFT_KEY_PREFIX + (postId || "new");
       let existingPost = null;
       let blocks = [];
       let activeBlockId = "";
+      let draftTimer = 0;
+      let lastDraftSavedAt = 0;
+      let toastTimer = 0;
+      let isSavingAndLeaving = false;
 
       init();
 
@@ -660,12 +721,14 @@
         if (existingPost) {
           modeBadgeEl.textContent = "Edit Note";
           titleInput.value = existingPost.title;
+          tagsInput.value = (existingPost.tags || []).join(", ");
           blocks = restoreBlocks(existingPost);
         } else {
           modeBadgeEl.textContent = "New Note";
           blocks = [createBlock("paragraph")];
         }
 
+        restoreDraftIfNeeded();
         renderBlocks();
 
         addButtons.forEach((btn) => {
@@ -673,8 +736,13 @@
         });
 
         blocksArea.addEventListener("click", onBlockActionClick);
+        blocksArea.addEventListener("input", scheduleDraftSave, true);
+        blocksArea.addEventListener("change", scheduleDraftSave, true);
+        titleInput.addEventListener("input", scheduleDraftSave);
+        tagsInput.addEventListener("input", scheduleDraftSave);
         saveBtn.addEventListener("click", onSave);
         window.addEventListener("keydown", onKeydown);
+        window.addEventListener("beforeunload", onBeforeUnload);
       }
 
       function restoreBlocks(post) {
@@ -716,6 +784,7 @@
         blocks.splice(insertAt, 0, newBlock);
         activeBlockId = newBlock.id;
         renderBlocks();
+        scheduleDraftSave();
         focusBlock(newBlock.id);
       }
 
@@ -735,6 +804,7 @@
           swapBlocks(blockIndex, blockIndex - 1);
           activeBlockId = blockId;
           renderBlocks();
+          scheduleDraftSave();
           focusBlock(blockId);
           return;
         }
@@ -743,6 +813,7 @@
           swapBlocks(blockIndex, blockIndex + 1);
           activeBlockId = blockId;
           renderBlocks();
+          scheduleDraftSave();
           focusBlock(blockId);
           return;
         }
@@ -755,6 +826,7 @@
           const nextIndex = Math.min(blockIndex, blocks.length - 1);
           activeBlockId = blocks[nextIndex].id;
           renderBlocks();
+          scheduleDraftSave();
           focusBlock(activeBlockId);
           return;
         }
@@ -765,6 +837,7 @@
           block.cells.push(new Array(cols).fill(""));
           activeBlockId = block.id;
           renderBlocks();
+          scheduleDraftSave();
           focusBlock(block.id);
           return;
         }
@@ -774,6 +847,7 @@
           block.cells.forEach((row) => row.push(""));
           activeBlockId = block.id;
           renderBlocks();
+          scheduleDraftSave();
           focusBlock(block.id);
           return;
         }
@@ -784,6 +858,7 @@
             block.cells.pop();
             activeBlockId = block.id;
             renderBlocks();
+            scheduleDraftSave();
             focusBlock(block.id);
           }
           return;
@@ -795,6 +870,7 @@
             block.cells.forEach((row) => row.pop());
             activeBlockId = block.id;
             renderBlocks();
+            scheduleDraftSave();
             focusBlock(block.id);
           }
         }
@@ -1108,6 +1184,7 @@
 
       function onSave() {
         const title = titleInput.value.trim();
+        const tags = parseTags(tagsInput.value);
 
         if (!title) {
           setStatus("Title is required.", "error");
@@ -1121,19 +1198,25 @@
           return;
         }
 
+        tagsInput.value = tags.join(", ");
         const content = blocksToMarkdown(storedBlocks);
-        postStore.upsertPost({
+        const savedPost = postStore.upsertPost({
           id: existingPost ? existingPost.id : undefined,
           title: title,
+          tags: tags,
           content: content,
           blocks: storedBlocks,
           createdAt: existingPost ? existingPost.createdAt : undefined
         });
+        existingPost = savedPost;
 
+        clearDraft();
         setStatus("Saved. Returning to notes...", "success");
+        showToast("Note saved.");
         window.setTimeout(() => {
+          isSavingAndLeaving = true;
           window.location.href = "./index.html?saved=1";
-        }, 220);
+        }, 360);
       }
 
       function onKeydown(event) {
@@ -1141,6 +1224,145 @@
         if (!isSave) return;
         event.preventDefault();
         onSave();
+      }
+
+      function onBeforeUnload() {
+        if (isSavingAndLeaving) return;
+        saveDraft(true);
+      }
+
+      function scheduleDraftSave() {
+        if (isSavingAndLeaving) return;
+        window.clearTimeout(draftTimer);
+        draftTimer = window.setTimeout(() => {
+          saveDraft(false);
+        }, 380);
+      }
+
+      function saveDraft(force) {
+        if (isSavingAndLeaving) return;
+
+        const snapshot = buildDraftSnapshot();
+        if (!hasDraftContent(snapshot)) {
+          clearDraft();
+          return;
+        }
+
+        try {
+          window.localStorage.setItem(draftKey, JSON.stringify(snapshot));
+          if (force) return;
+          const now = Date.now();
+          if (now - lastDraftSavedAt > 5000) {
+            lastDraftSavedAt = now;
+            setStatus("Draft auto-saved locally.", "success");
+          }
+        } catch {
+          if (!force) {
+            setStatus("Unable to save local draft. Storage may be full.", "error");
+          }
+        }
+      }
+
+      function clearDraft() {
+        window.clearTimeout(draftTimer);
+        window.localStorage.removeItem(draftKey);
+      }
+
+      function restoreDraftIfNeeded() {
+        const raw = window.localStorage.getItem(draftKey);
+        if (!raw) return;
+
+        let parsed = null;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          window.localStorage.removeItem(draftKey);
+          return;
+        }
+
+        if (!parsed || typeof parsed !== "object") return;
+
+        const savedAt = parsed.savedAt ? formatDate(parsed.savedAt) : "recently";
+        const shouldRestore = window.confirm("Found an unsaved draft from " + savedAt + ". Restore it?");
+        if (!shouldRestore) {
+          clearDraft();
+          return;
+        }
+
+        if (typeof parsed.title === "string") {
+          titleInput.value = parsed.title;
+        }
+
+        if (Array.isArray(parsed.tags)) {
+          tagsInput.value = normalizeTags(parsed.tags).join(", ");
+        }
+
+        const restoredBlocks = restoreDraftBlocks(parsed.blocks);
+        if (restoredBlocks.length) {
+          blocks = restoredBlocks;
+          activeBlockId = restoredBlocks[0].id;
+        }
+
+        showToast("Draft restored.");
+        setStatus("Draft restored from local cache.", "success");
+      }
+
+      function buildDraftSnapshot() {
+        const draftBlocks = blocks.map((block) => {
+          if (!block || typeof block !== "object") return null;
+          if (block.type === "paragraph") return { type: "paragraph", text: String(block.text || "") };
+          if (block.type === "heading") return { type: "heading", level: normalizeHeadingLevel(block.level), text: String(block.text || "") };
+          if (block.type === "quote") return { type: "quote", text: String(block.text || "") };
+          if (block.type === "code") {
+            return {
+              type: "code",
+              lang: normalizeCodeLanguage(block.lang) || "cpp",
+              code: String(block.code || ""),
+              height: normalizeCodeHeight(block.height)
+            };
+          }
+          if (block.type === "table") return { type: "table", cells: normalizeTableCells(block.cells) };
+          return null;
+        }).filter(Boolean);
+
+        return {
+          id: postId || "new",
+          title: titleInput.value || "",
+          tags: parseTags(tagsInput.value),
+          blocks: draftBlocks,
+          savedAt: new Date().toISOString()
+        };
+      }
+
+      function restoreDraftBlocks(items) {
+        if (!Array.isArray(items)) return [];
+        return items
+          .map((item) => {
+            if (!item || typeof item !== "object") return null;
+            if (item.type === "paragraph") return createBlock("paragraph", { text: item.text });
+            if (item.type === "heading") return createBlock("heading", { text: item.text, level: item.level });
+            if (item.type === "quote") return createBlock("quote", { text: item.text });
+            if (item.type === "code") return createBlock("code", { code: item.code, lang: item.lang, height: item.height });
+            if (item.type === "table") return createBlock("table", { cells: item.cells });
+            return null;
+          })
+          .filter(Boolean);
+      }
+
+      function hasDraftContent(draft) {
+        if (!draft || typeof draft !== "object") return false;
+        if (String(draft.title || "").trim()) return true;
+        if (Array.isArray(draft.tags) && draft.tags.length) return true;
+        if (!Array.isArray(draft.blocks)) return false;
+
+        return draft.blocks.some((block) => {
+          if (!block || typeof block !== "object") return false;
+          if (block.type === "paragraph" || block.type === "quote") return String(block.text || "").trim().length > 0;
+          if (block.type === "heading") return String(block.text || "").trim().length > 0;
+          if (block.type === "code") return String(block.code || "").trim().length > 0;
+          if (block.type === "table") return tableHasContent(normalizeTableCells(block.cells));
+          return false;
+        });
       }
 
       function editorToStoredBlock(block) {
@@ -1291,6 +1513,46 @@
         const num = Number(value);
         if (!Number.isFinite(num)) return 220;
         return Math.max(180, Math.min(1200, Math.round(num)));
+      }
+
+      function parseTags(value) {
+        const raw = String(value || "");
+        const parts = raw.split(/[,，\n]/g);
+        return normalizeTags(parts);
+      }
+
+      function normalizeTags(tags) {
+        if (!Array.isArray(tags)) return [];
+        const seen = new Set();
+        const normalized = [];
+        tags.forEach((tag) => {
+          const next = String(tag || "").trim().slice(0, 24);
+          if (!next) return;
+          const key = next.toLowerCase();
+          if (seen.has(key)) return;
+          seen.add(key);
+          normalized.push(next);
+        });
+        return normalized.slice(0, 12);
+      }
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        toastEl.hidden = false;
+        toastEl.textContent = String(message || "");
+        toastEl.classList.add("show");
+        toastTimer = window.setTimeout(() => {
+          toastEl.classList.remove("show");
+          window.setTimeout(() => {
+            toastEl.hidden = true;
+          }, 220);
+        }, 1200);
+      }
+
+      function formatDate(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "Unknown time";
+        return date.toLocaleString();
       }
 
       function escapeHtml(value) {

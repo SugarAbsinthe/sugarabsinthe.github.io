@@ -28,11 +28,15 @@
   function upsertPost(payload) {
     const now = new Date().toISOString();
     const posts = readPosts();
+    const hasTags = !!(payload && Object.prototype.hasOwnProperty.call(payload, "tags"));
+    const hasFavorite = !!(payload && Object.prototype.hasOwnProperty.call(payload, "favorite"));
     const incoming = sanitizePost({
       id: payload && payload.id ? String(payload.id) : createId(),
       title: payload && payload.title ? payload.title : "",
       content: payload && payload.content ? payload.content : "",
       blocks: payload && Array.isArray(payload.blocks) ? payload.blocks : [],
+      tags: payload && Array.isArray(payload.tags) ? payload.tags : [],
+      favorite: payload && payload.favorite === true,
       createdAt: payload && payload.createdAt ? payload.createdAt : now,
       updatedAt: now
     });
@@ -42,6 +46,8 @@
       posts[targetIndex] = {
         ...posts[targetIndex],
         ...incoming,
+        tags: hasTags ? incoming.tags : posts[targetIndex].tags,
+        favorite: hasFavorite ? incoming.favorite : posts[targetIndex].favorite,
         createdAt: posts[targetIndex].createdAt || incoming.createdAt,
         updatedAt: now
       };
@@ -64,6 +70,8 @@
       title: typeof item.title === "string" ? item.title.trim().slice(0, 200) : "",
       content: typeof item.content === "string" ? item.content : "",
       blocks: sanitizeBlocks(Array.isArray(item.blocks) ? item.blocks : []),
+      tags: normalizeTags(item.tags),
+      favorite: item.favorite === true,
       createdAt: typeof item.createdAt === "string" ? item.createdAt : "",
       updatedAt: typeof item.updatedAt === "string" ? item.updatedAt : ""
     };
@@ -95,6 +103,21 @@
     const level = Number(value);
     if (level === 1 || level === 2 || level === 3) return level;
     return 2;
+  }
+
+  function normalizeTags(tags) {
+    if (!Array.isArray(tags)) return [];
+    const seen = new Set();
+    const normalized = [];
+    tags.forEach((tag) => {
+      const next = String(tag || "").trim().slice(0, 24);
+      if (!next) return;
+      const key = next.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      normalized.push(next);
+    });
+    return normalized.slice(0, 12);
   }
 
   function createId() {

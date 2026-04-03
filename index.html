@@ -85,7 +85,6 @@
     }
 
     .brand-text {
-      font-family: "Manrope", "Noto Sans SC", sans-serif;
       font-size: 1.22rem;
       font-weight: 800;
     }
@@ -100,6 +99,11 @@
       font-weight: 700;
       padding: 0.58rem 0.94rem;
       box-shadow: 0 8px 16px rgba(108, 77, 255, 0.22);
+      transition: transform 0.18s ease;
+    }
+
+    .primary-link:hover {
+      transform: translateY(-1px);
     }
 
     .hero {
@@ -113,15 +117,6 @@
       grid-template-columns: 1.4fr 0.6fr;
       gap: 1.12rem;
       align-items: stretch;
-    }
-
-    .hero-kicker {
-      margin: 0;
-      color: var(--primary);
-      font-size: 0.84rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      font-weight: 800;
     }
 
     .hero-dog {
@@ -172,13 +167,6 @@
       letter-spacing: 0.01em;
     }
 
-    .hero-profile p {
-      margin: 0;
-      font-size: 0.92rem;
-      color: var(--muted);
-      line-height: 1.62;
-    }
-
     .profile-list {
       margin: 0.1rem 0 0;
       padding: 0;
@@ -208,6 +196,78 @@
       font-weight: 600;
     }
 
+    .controls {
+      margin-top: 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 26px rgba(58, 69, 129, 0.08);
+      padding: 0.82rem;
+      display: grid;
+      gap: 0.68rem;
+    }
+
+    .controls-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .controls-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr auto;
+      gap: 0.55rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    .field span {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.5rem 0.58rem;
+      min-height: 40px;
+    }
+
+    .btn-clear {
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 0.55rem 0.74rem;
+      cursor: pointer;
+      align-self: end;
+      min-height: 40px;
+    }
+
     .posts {
       margin-top: 1rem;
       display: grid;
@@ -222,6 +282,18 @@
       padding: 0.92rem 1rem;
       display: grid;
       gap: 0.62rem;
+      animation: rise-in 0.34s ease both;
+      transition: transform 0.18s ease, box-shadow 0.2s ease;
+    }
+
+    .post-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 38px rgba(49, 58, 118, 0.17);
+    }
+
+    .post-card-favorite {
+      border-color: #ffc764;
+      box-shadow: 0 18px 40px rgba(140, 104, 0, 0.14);
     }
 
     .post-head {
@@ -266,6 +338,23 @@
       white-space: pre-wrap;
     }
 
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .tag-chip {
+      border-radius: 999px;
+      border: 1px solid #d2dcff;
+      background: #f7f9ff;
+      color: #3f4a7e;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      line-height: 1;
+    }
+
     .post-actions {
       display: flex;
       flex-wrap: wrap;
@@ -282,10 +371,24 @@
       font-weight: 700;
       padding: 0.48rem 0.74rem;
       cursor: pointer;
+      transition: transform 0.18s ease;
     }
 
     .btn:hover {
       border-color: #9fafe6;
+      transform: translateY(-1px);
+    }
+
+    .btn-pin {
+      border-color: #f2d298;
+      background: #fffaf0;
+      color: #7c5c1f;
+    }
+
+    .btn-pin.is-active {
+      background: #ffe9b8;
+      border-color: #d9a23e;
+      color: #6e4f12;
     }
 
     .btn-danger {
@@ -324,9 +427,33 @@
     }
 
     .primary-link:focus-visible,
-    .btn:focus-visible {
+    .btn:focus-visible,
+    .btn-clear:focus-visible,
+    .field input:focus-visible,
+    .field select:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
       outline-offset: 2px;
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .control-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .btn-clear {
+        grid-column: 1 / -1;
+      }
     }
 
     @media (max-width: 720px) {
@@ -338,6 +465,10 @@
 
       .hero {
         padding: 0.95rem;
+        grid-template-columns: 1fr;
+      }
+
+      .control-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -357,7 +488,9 @@
       <div>
         <img class="hero-dog" src="./dog.jpg" alt="dog">
         <p>Live like summer flowers.</p>
-        <div class="count-badge">Total Notes: <span id="post-count">0</span></div>
+        <div class="count-badge">
+          Showing <span id="filtered-count">0</span> / <span id="post-count">0</span>
+        </div>
       </div>
       <aside class="hero-profile">
         <h2>About Me</h2>
@@ -370,6 +503,34 @@
     </section>
 
     <div id="saved-status" class="status" hidden>Note saved successfully.</div>
+
+    <section class="controls" aria-label="Filter and sort notes">
+      <div class="controls-head">
+        <p>Search, tag filter, and sort all run locally in your browser.</p>
+      </div>
+      <div class="control-grid">
+        <label class="field" for="search-input">
+          <span>Search</span>
+          <input id="search-input" type="search" placeholder="Search title, content, or tag...">
+        </label>
+        <label class="field" for="tag-filter">
+          <span>Tag</span>
+          <select id="tag-filter">
+            <option value="">All tags</option>
+          </select>
+        </label>
+        <label class="field" for="sort-select">
+          <span>Sort</span>
+          <select id="sort-select">
+            <option value="updated_desc">Latest Updated</option>
+            <option value="updated_asc">Oldest Updated</option>
+            <option value="title_asc">Title A-Z</option>
+            <option value="title_desc">Title Z-A</option>
+          </select>
+        </label>
+        <button id="clear-filters" class="btn-clear" type="button">Clear Filters</button>
+      </div>
+    </section>
 
     <main>
       <div id="posts-list" class="posts" hidden></div>
@@ -390,23 +551,67 @@
       const listEl = document.getElementById("posts-list");
       const emptyEl = document.getElementById("empty-state");
       const countEl = document.getElementById("post-count");
+      const filteredCountEl = document.getElementById("filtered-count");
       const savedStatusEl = document.getElementById("saved-status");
+      const searchInputEl = document.getElementById("search-input");
+      const tagFilterEl = document.getElementById("tag-filter");
+      const sortSelectEl = document.getElementById("sort-select");
+      const clearFiltersEl = document.getElementById("clear-filters");
+
+      const state = {
+        query: "",
+        tag: "",
+        sort: "updated_desc"
+      };
 
       init();
 
       function init() {
         showSavedStatusIfNeeded();
+        bindEvents();
         render();
       }
 
+      function bindEvents() {
+        searchInputEl.addEventListener("input", () => {
+          state.query = searchInputEl.value.trim();
+          render();
+        });
+
+        tagFilterEl.addEventListener("change", () => {
+          state.tag = tagFilterEl.value;
+          render();
+        });
+
+        sortSelectEl.addEventListener("change", () => {
+          state.sort = sortSelectEl.value;
+          render();
+        });
+
+        clearFiltersEl.addEventListener("click", () => {
+          state.query = "";
+          state.tag = "";
+          state.sort = "updated_desc";
+          searchInputEl.value = "";
+          tagFilterEl.value = "";
+          sortSelectEl.value = state.sort;
+          render();
+        });
+      }
+
       function render() {
-        const posts = postStore.readPosts().sort((a, b) => Number(new Date(b.updatedAt)) - Number(new Date(a.updatedAt)));
-        countEl.textContent = String(posts.length);
+        const allPosts = postStore.readPosts();
+        countEl.textContent = String(allPosts.length);
+        renderTagOptions(allPosts);
+
+        const posts = applyFiltersAndSort(allPosts);
+        filteredCountEl.textContent = String(posts.length);
         listEl.innerHTML = "";
 
         if (!posts.length) {
           listEl.hidden = true;
           emptyEl.hidden = false;
+          emptyEl.innerHTML = buildEmptyText(allPosts.length);
           return;
         }
 
@@ -414,9 +619,10 @@
         listEl.hidden = false;
 
         const frag = document.createDocumentFragment();
-        posts.forEach((post) => {
+        posts.forEach((post, index) => {
           const card = document.createElement("article");
-          card.className = "post-card";
+          card.className = "post-card" + (post.favorite ? " post-card-favorite" : "");
+          card.style.animationDelay = String(Math.min(index * 0.03, 0.24)) + "s";
 
           const head = document.createElement("div");
           head.className = "post-head";
@@ -441,8 +647,26 @@
           excerpt.textContent = buildExcerpt(post.content);
           card.appendChild(excerpt);
 
+          if (Array.isArray(post.tags) && post.tags.length) {
+            const tagsEl = document.createElement("div");
+            tagsEl.className = "tag-list";
+            post.tags.forEach((tag) => {
+              const chip = document.createElement("span");
+              chip.className = "tag-chip";
+              chip.textContent = "#" + tag;
+              tagsEl.appendChild(chip);
+            });
+            card.appendChild(tagsEl);
+          }
+
           const actions = document.createElement("div");
           actions.className = "post-actions";
+
+          const pinBtn = document.createElement("button");
+          pinBtn.type = "button";
+          pinBtn.className = "btn btn-pin" + (post.favorite ? " is-active" : "");
+          pinBtn.textContent = post.favorite ? "Pinned" : "Pin To Top";
+          pinBtn.addEventListener("click", () => onToggleFavorite(post.id));
 
           const editLink = document.createElement("a");
           editLink.className = "btn";
@@ -455,6 +679,7 @@
           deleteBtn.textContent = "Delete";
           deleteBtn.addEventListener("click", () => onDelete(post.id));
 
+          actions.appendChild(pinBtn);
           actions.appendChild(editLink);
           actions.appendChild(deleteBtn);
           card.appendChild(actions);
@@ -465,10 +690,98 @@
         listEl.appendChild(frag);
       }
 
+      function applyFiltersAndSort(posts) {
+        const query = state.query.trim().toLowerCase();
+        const tag = state.tag.trim().toLowerCase();
+        const next = posts.filter((post) => {
+          if (tag) {
+            const hasTag = Array.isArray(post.tags) && post.tags.some((item) => String(item).toLowerCase() === tag);
+            if (!hasTag) return false;
+          }
+
+          if (!query) return true;
+          const haystack = [post.title, post.content].concat(post.tags || []).join(" ").toLowerCase();
+          return haystack.includes(query);
+        });
+
+        return next.sort((a, b) => {
+          const pinCompare = Number(b.favorite === true) - Number(a.favorite === true);
+          if (pinCompare !== 0) return pinCompare;
+          return compareBySort(a, b, state.sort);
+        });
+      }
+
+      function compareBySort(a, b, sortType) {
+        const updatedA = Number(new Date(a.updatedAt));
+        const updatedB = Number(new Date(b.updatedAt));
+        const titleA = String(a.title || "").toLowerCase();
+        const titleB = String(b.title || "").toLowerCase();
+
+        if (sortType === "updated_asc") return updatedA - updatedB;
+        if (sortType === "title_asc") return titleA.localeCompare(titleB);
+        if (sortType === "title_desc") return titleB.localeCompare(titleA);
+        return updatedB - updatedA;
+      }
+
+      function onToggleFavorite(id) {
+        const post = postStore.getPostById(id);
+        if (!post) return;
+
+        postStore.upsertPost({
+          id: post.id,
+          title: post.title,
+          content: post.content,
+          blocks: post.blocks,
+          tags: post.tags,
+          favorite: !post.favorite,
+          createdAt: post.createdAt
+        });
+        render();
+      }
+
       function onDelete(id) {
         if (!window.confirm("Delete this note?")) return;
         postStore.deletePost(id);
         render();
+      }
+
+      function renderTagOptions(posts) {
+        const tagValues = [];
+        const seen = new Set();
+        posts.forEach((post) => {
+          (post.tags || []).forEach((tag) => {
+            const value = String(tag || "").trim();
+            const key = value.toLowerCase();
+            if (!value || seen.has(key)) return;
+            seen.add(key);
+            tagValues.push(value);
+          });
+        });
+        tagValues.sort((a, b) => a.localeCompare(b));
+
+        const current = state.tag;
+        tagFilterEl.innerHTML = "";
+
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "All tags";
+        tagFilterEl.appendChild(defaultOption);
+
+        tagValues.forEach((tag) => {
+          const option = document.createElement("option");
+          option.value = tag;
+          option.textContent = "#" + tag;
+          tagFilterEl.appendChild(option);
+        });
+
+        if (current && tagValues.some((tag) => tag.toLowerCase() === current.toLowerCase())) {
+          const matched = tagValues.find((tag) => tag.toLowerCase() === current.toLowerCase());
+          tagFilterEl.value = matched || "";
+          state.tag = matched || "";
+        } else {
+          tagFilterEl.value = "";
+          state.tag = "";
+        }
       }
 
       function showSavedStatusIfNeeded() {
@@ -476,6 +789,13 @@
         if (params.get("saved") !== "1") return;
         savedStatusEl.hidden = false;
         window.history.replaceState({}, "", "./index.html");
+      }
+
+      function buildEmptyText(total) {
+        if (!total) {
+          return "No notes yet. Click <strong>Add Note</strong> to create your first entry.";
+        }
+        return "No notes match the current filters. Try changing search keyword or tag.";
       }
 
       function buildExcerpt(content) {

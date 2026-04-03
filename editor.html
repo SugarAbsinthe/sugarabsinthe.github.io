@@ -333,7 +333,7 @@
       min-height: 150px;
     }
 
-    .doc-block-code .field-input {
+    .doc-block-code .field-select {
       max-width: 240px;
     }
 
@@ -696,13 +696,12 @@
         if (type === "heading") return { id: blockId, type, level: normalizeHeadingLevel(seed && seed.level), text: String((seed && seed.text) || "") };
         if (type === "quote") return { id: blockId, type, text: String((seed && seed.text) || "") };
         if (type === "code") {
+          const language = normalizeCodeLanguage(seed && seed.lang) || "cpp";
           return {
             id: blockId,
             type,
-            lang: "cpp",
+            lang: language,
             code: String((seed && seed.code) || ""),
-            langManual: true,
-            detectedLang: "cpp",
             height: normalizeCodeHeight(seed && seed.height)
           };
         }
@@ -929,21 +928,24 @@
           const top = document.createElement("div");
           top.className = "code-top";
 
-          const langInput = document.createElement("input");
-          langInput.type = "text";
-          langInput.className = "field-input";
-          langInput.value = "C++";
-          langInput.readOnly = true;
-          langInput.title = "Code blocks are fixed to C++";
-          langInput.addEventListener("focus", () => {
+          const langSelect = document.createElement("select");
+          langSelect.className = "field-select";
+          langSelect.innerHTML = buildLanguageOptions();
+          langSelect.value = normalizeCodeLanguage(block.lang) || "cpp";
+          langSelect.title = "Select language for highlighting";
+          langSelect.addEventListener("focus", () => {
             activeBlockId = block.id;
+          });
+          langSelect.addEventListener("change", () => {
+            block.lang = normalizeCodeLanguage(langSelect.value) || "cpp";
+            renderCodePreview();
           });
 
           const hint = document.createElement("p");
           hint.className = "code-hint";
-          hint.textContent = "Language fixed: C++ with syntax highlighting.";
+          hint.textContent = "Select language from dropdown. Default is C++.";
 
-          top.appendChild(langInput);
+          top.appendChild(langSelect);
           top.appendChild(hint);
 
           const codeArea = createTextarea(block.code, "Write code here...");
@@ -972,17 +974,16 @@
 
           function renderCodePreview() {
             const codeText = codeArea.value || "";
-            const highlighted = highlightCode(codeText);
+            const activeLanguage = normalizeCodeLanguage(langSelect.value) || "cpp";
+            const highlighted = highlightCode(codeText, activeLanguage);
             codePreview.innerHTML = highlighted.html || "<span></span>";
 
             block.code = codeText;
-            block.lang = "cpp";
-            block.langManual = true;
-            block.detectedLang = "cpp";
-            langInput.value = "C++";
+            block.lang = activeLanguage;
+            langSelect.value = activeLanguage;
 
             block.height = normalizeCodeHeight(codeArea.offsetHeight);
-            hint.textContent = "Language: cpp (fixed) - Drag corner to resize";
+            hint.textContent = "Language: " + activeLanguage + " - Drag corner to resize";
             syncCodeScroll();
           }
 
@@ -1218,16 +1219,16 @@
         return "Block";
       }
 
-      function highlightCode(code) {
+      function highlightCode(code, language) {
         const raw = String(code || "");
+        const selected = normalizeCodeLanguage(language) || "cpp";
         if (!raw) {
           return {
             html: "",
-            language: "cpp"
+            language: selected
           };
         }
 
-        const selected = "cpp";
         const hljs = window.hljs;
         if (hljs && typeof hljs.highlight === "function") {
           if (hljs.getLanguage(selected)) {
@@ -1240,6 +1241,50 @@
           html: escapeHtml(raw),
           language: selected
         };
+      }
+
+      function buildLanguageOptions() {
+        const options = [
+          { value: "cpp", label: "C++ (Default)" },
+          { value: "python", label: "Python" },
+          { value: "javascript", label: "JavaScript" },
+          { value: "typescript", label: "TypeScript" },
+          { value: "java", label: "Java" },
+          { value: "go", label: "Go" },
+          { value: "rust", label: "Rust" },
+          { value: "csharp", label: "C#" },
+          { value: "bash", label: "Bash" },
+          { value: "sql", label: "SQL" }
+        ];
+        return options
+          .map((option) => "<option value='" + option.value + "'>" + option.label + "</option>")
+          .join("");
+      }
+
+      function normalizeCodeLanguage(value) {
+        const input = String(value || "").trim().toLowerCase();
+        const map = {
+          cpp: "cpp",
+          "c++": "cpp",
+          cxx: "cpp",
+          cc: "cpp",
+          py: "python",
+          python: "python",
+          js: "javascript",
+          javascript: "javascript",
+          ts: "typescript",
+          typescript: "typescript",
+          java: "java",
+          go: "go",
+          rust: "rust",
+          cs: "csharp",
+          "c#": "csharp",
+          csharp: "csharp",
+          sh: "bash",
+          bash: "bash",
+          sql: "sql"
+        };
+        return map[input] || "";
       }
 
       function normalizeCodeHeight(value) {

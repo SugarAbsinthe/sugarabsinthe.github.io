@@ -734,7 +734,7 @@
           const title = document.createElement("h2");
           title.className = "post-title";
           const titleLink = document.createElement("a");
-          titleLink.href = "./editor.html?id=" + encodeURIComponent(post.id);
+          titleLink.href = "./post.html?id=" + encodeURIComponent(post.id);
           titleLink.textContent = post.title || "Untitled";
           title.appendChild(titleLink);
 
@@ -777,6 +777,11 @@
           editLink.href = "./editor.html?id=" + encodeURIComponent(post.id);
           editLink.textContent = "Edit";
 
+          const readLink = document.createElement("a");
+          readLink.className = "btn";
+          readLink.href = "./post.html?id=" + encodeURIComponent(post.id);
+          readLink.textContent = "Read";
+
           const deleteBtn = document.createElement("button");
           deleteBtn.type = "button";
           deleteBtn.className = "btn btn-danger";
@@ -784,6 +789,7 @@
           deleteBtn.addEventListener("click", () => onDelete(post.id));
 
           actions.appendChild(pinBtn);
+          actions.appendChild(readLink);
           actions.appendChild(editLink);
           actions.appendChild(deleteBtn);
           card.appendChild(actions);

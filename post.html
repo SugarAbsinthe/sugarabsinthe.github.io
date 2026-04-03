@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Read Note - SugarAbsinthe</title>
+  <meta name="description" content="Single note reading page with table of contents and reading progress.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+  <style>
+    :root {
+      --bg: #f8f8ff;
+      --bg-soft: #f2f7ff;
+      --card: #ffffff;
+      --text: #181a2a;
+      --muted: #5a607f;
+      --line: #d8ddf2;
+      --line-strong: #bec8ee;
+      --primary: #6c4dff;
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
+      --max-width: 1260px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Manrope", "Noto Sans SC", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(42rem 24rem at -10% -10%, rgba(113, 132, 255, 0.2), transparent 62%),
+        radial-gradient(30rem 18rem at 110% -8%, rgba(13, 160, 255, 0.18), transparent 60%),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 56%, var(--bg-soft) 100%);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(108, 77, 255, 0.16);
+      z-index: 20;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(120deg, var(--primary) 0%, #43b6ff 100%);
+      transition: width 0.1s linear;
+    }
+
+    .page {
+      width: min(var(--max-width), 94vw);
+      margin: 0 auto;
+      padding: 1.45rem 0 2.7rem;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px rgba(72, 87, 164, 0.1);
+      padding: 0.58rem 0.74rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 0.2rem 0.45rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-mark {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, var(--primary) 0%, #5f8bff 100%);
+      box-shadow: 0 8px 14px rgba(108, 77, 255, 0.25);
+      display: inline-block;
+    }
+
+    .brand-text {
+      font-size: 1.22rem;
+      font-weight: 800;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 700;
+      padding: 0.5rem 0.84rem;
+      transition: transform 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      border-color: transparent;
+      background: linear-gradient(120deg, var(--primary) 0%, #5f8bff 100%);
+      color: #fff;
+    }
+
+    .layout {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 0.72rem;
+      align-items: start;
+    }
+
+    .article {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      padding: 1.15rem 1.2rem;
+    }
+
+    .meta {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .title {
+      margin: 0.44rem 0 0;
+      font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+    }
+
+    .tag-list {
+      margin-top: 0.64rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .tag-chip {
+      border-radius: 999px;
+      border: 1px solid #d2dcff;
+      background: #f7f9ff;
+      color: #3f4a7e;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.24rem 0.48rem;
+      line-height: 1;
+    }
+
+    .content {
+      margin-top: 0.9rem;
+      display: grid;
+      gap: 0.9rem;
+      color: #25283c;
+      line-height: 1.75;
+    }
+
+    .content p {
+      margin: 0;
+      white-space: pre-wrap;
+      font-size: 1rem;
+    }
+
+    .content h1,
+    .content h2,
+    .content h3 {
+      margin: 0.25rem 0 0;
+      line-height: 1.28;
+      letter-spacing: -0.01em;
+      scroll-margin-top: 74px;
+    }
+
+    .content h1 {
+      font-size: 1.8rem;
+    }
+
+    .content h2 {
+      font-size: 1.5rem;
+    }
+
+    .content h3 {
+      font-size: 1.25rem;
+    }
+
+    .content blockquote {
+      margin: 0;
+      padding: 0.58rem 0.78rem;
+      border-left: 4px solid #8ab3ff;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #f8fbff 0%, #ffffff 60%);
+      color: #394066;
+      font-style: italic;
+      white-space: pre-wrap;
+    }
+
+    .code-block {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .code-head {
+      border-bottom: 1px solid var(--line);
+      background: #f6f8ff;
+      padding: 0.44rem 0.62rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .code-lang {
+      color: #3f4a7e;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .copy-btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 0.22rem 0.52rem;
+      cursor: pointer;
+    }
+
+    .code-block pre {
+      margin: 0;
+      overflow: auto;
+      padding: 0.72rem 0.78rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9rem;
+      line-height: 1.65;
+      background: #fff;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .table-grid {
+      width: 100%;
+      min-width: 380px;
+      border-collapse: collapse;
+    }
+
+    .table-grid th,
+    .table-grid td {
+      border: 1px solid #dfe6f7;
+      padding: 0.44rem 0.54rem;
+      text-align: left;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+
+    .table-grid th {
+      background: #f5fbff;
+      font-weight: 700;
+    }
+
+    .toc {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 0.82rem;
+      position: sticky;
+      top: 0.8rem;
+    }
+
+    .toc h2 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .toc-empty {
+      margin: 0.5rem 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    .toc-list {
+      margin-top: 0.45rem;
+      display: grid;
+      gap: 0.22rem;
+    }
+
+    .toc-item {
+      display: block;
+      color: #3b4471;
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 700;
+      line-height: 1.5;
+      border-radius: 8px;
+      padding: 0.22rem 0.38rem;
+    }
+
+    .toc-item:hover {
+      background: #f4f7ff;
+    }
+
+    .toc-item.l2 {
+      padding-left: 0.78rem;
+      font-weight: 600;
+    }
+
+    .toc-item.l3 {
+      padding-left: 1.22rem;
+      font-weight: 600;
+    }
+
+    .prev-next {
+      margin-top: 1.1rem;
+      padding-top: 0.82rem;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .prev-next a {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .message {
+      margin-top: 0.8rem;
+      border: 1px dashed var(--line-strong);
+      border-radius: 10px;
+      background: #fcfdff;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.62;
+      padding: 0.82rem;
+    }
+
+    .footer {
+      margin-top: 1.1rem;
+      border-top: 1px solid var(--line);
+      padding-top: 0.86rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .btn:focus-visible,
+    .copy-btn:focus-visible,
+    .toc-item:focus-visible,
+    .brand:focus-visible {
+      outline: 3px solid rgba(13, 160, 255, 0.35);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .toc {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        border-radius: 16px;
+      }
+
+      .article {
+        padding: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-track" aria-hidden="true">
+    <div id="progress-bar" class="progress-bar"></div>
+  </div>
+
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">SugarAbsinthe</span>
+      </a>
+      <div class="top-actions">
+        <a class="btn" href="./index.html">Back To Notes</a>
+        <a id="edit-link" class="btn btn-primary" href="./editor.html">Edit Note</a>
+      </div>
+    </header>
+
+    <main class="layout">
+      <article class="article">
+        <p id="meta" class="meta">Loading...</p>
+        <h1 id="title" class="title">Loading note...</h1>
+        <div id="tag-list" class="tag-list" hidden></div>
+        <p id="message" class="message" hidden></p>
+        <div id="content" class="content"></div>
+        <div id="prev-next" class="prev-next" hidden>
+          <a id="newer-link" href="#" hidden></a>
+          <a id="older-link" href="#" hidden></a>
+        </div>
+      </article>
+
+      <aside class="toc">
+        <h2>Contents</h2>
+        <p id="toc-empty" class="toc-empty">No headings in this note.</p>
+        <nav id="toc-list" class="toc-list" hidden></nav>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <span>&copy; 2026 SugarAbsinthe</span>
+      <span><a href="./editor.html">Open Editor</a></span>
+    </footer>
+  </div>
+
+  <script src="./posts-store.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>
+    (() => {
+      const progressBarEl = document.getElementById("progress-bar");
+      const titleEl = document.getElementById("title");
+      const metaEl = document.getElementById("meta");
+      const messageEl = document.getElementById("message");
+      const contentEl = document.getElementById("content");
+      const tagListEl = document.getElementById("tag-list");
+      const editLinkEl = document.getElementById("edit-link");
+      const tocEmptyEl = document.getElementById("toc-empty");
+      const tocListEl = document.getElementById("toc-list");
+      const prevNextEl = document.getElementById("prev-next");
+      const newerLinkEl = document.getElementById("newer-link");
+      const olderLinkEl = document.getElementById("older-link");
+
+      const params = new URLSearchParams(window.location.search);
+      const postId = params.get("id") || "";
+
+      init();
+
+      function init() {
+        renderPage();
+        bindScrollProgress();
+      }
+
+      function renderPage() {
+        const posts = postStore.readPosts().sort(sortForReadPage);
+        if (!postId) {
+          renderMissing("Missing note id in URL.");
+          return;
+        }
+
+        const index = posts.findIndex((item) => item.id === postId);
+        if (index < 0) {
+          renderMissing("This note was not found. It may have been deleted.");
+          return;
+        }
+
+        const post = posts[index];
+        editLinkEl.href = "./editor.html?id=" + encodeURIComponent(post.id);
+        titleEl.textContent = post.title || "Untitled";
+        document.title = (post.title || "Read Note") + " - SugarAbsinthe";
+        metaEl.textContent = buildMeta(post);
+        renderTags(post.tags);
+
+        const blocks = getRenderableBlocks(post);
+        const headings = renderBlocks(blocks);
+        renderToc(headings);
+        renderPrevNext(posts, index);
+
+        messageEl.hidden = true;
+        updateProgress();
+      }
+
+      function renderMissing(message) {
+        document.title = "Note Not Found - SugarAbsinthe";
+        titleEl.textContent = "Note Not Found";
+        metaEl.textContent = "Please return to notes list.";
+        renderTags([]);
+        renderToc([]);
+        renderPrevNext([], -1);
+        contentEl.innerHTML = "";
+
+        messageEl.hidden = false;
+        messageEl.textContent = String(message || "Unable to load note.");
+      }
+
+      function renderTags(tags) {
+        const normalized = Array.isArray(tags) ? tags.filter(Boolean) : [];
+        tagListEl.innerHTML = "";
+        if (!normalized.length) {
+          tagListEl.hidden = true;
+          return;
+        }
+
+        tagListEl.hidden = false;
+        normalized.forEach((tag) => {
+          const chip = document.createElement("span");
+          chip.className = "tag-chip";
+          chip.textContent = "#" + tag;
+          tagListEl.appendChild(chip);
+        });
+      }
+
+      function getRenderableBlocks(post) {
+        if (Array.isArray(post.blocks) && post.blocks.length) {
+          return post.blocks;
+        }
+        if (typeof post.content === "string" && post.content.trim()) {
+          return parseMarkdownToBlocks(post.content);
+        }
+        return [];
+      }
+
+      function renderBlocks(blocks) {
+        contentEl.innerHTML = "";
+
+        if (!Array.isArray(blocks) || !blocks.length) {
+          const empty = document.createElement("p");
+          empty.textContent = "No content yet.";
+          contentEl.appendChild(empty);
+          return [];
+        }
+
+        const headingIds = new Set();
+        const headings = [];
+        const frag = document.createDocumentFragment();
+
+        blocks.forEach((block) => {
+          const node = buildBlockNode(block, headings, headingIds);
+          if (node) frag.appendChild(node);
+        });
+
+        contentEl.appendChild(frag);
+        return headings;
+      }
+
+      function buildBlockNode(block, headings, headingIds) {
+        if (!block || typeof block !== "object") return null;
+
+        if (block.type === "paragraph") {
+          const p = document.createElement("p");
+          p.textContent = String(block.text || "");
+          return p;
+        }
+
+        if (block.type === "heading") {
+          const level = normalizeHeadingLevel(block.level);
+          const text = String(block.text || "").trim() || "Untitled Section";
+          const heading = document.createElement("h" + level);
+          const headingId = createHeadingId(text, headingIds);
+          heading.id = headingId;
+          heading.textContent = text;
+          headings.push({ id: headingId, level: level, text: text });
+          return heading;
+        }
+
+        if (block.type === "quote") {
+          const quote = document.createElement("blockquote");
+          quote.textContent = String(block.text || "");
+          return quote;
+        }
+
+        if (block.type === "code") {
+          return buildCodeBlock(String(block.code || ""), String(block.lang || ""));
+        }
+
+        if (block.type === "table") {
+          return buildTableBlock(String(block.rows || ""));
+        }
+
+        return null;
+      }
+
+      function buildCodeBlock(codeText, languageText) {
+        const figure = document.createElement("figure");
+        figure.className = "code-block";
+
+        const head = document.createElement("div");
+        head.className = "code-head";
+
+        const lang = normalizeCodeLanguage(languageText) || "plain";
+        const langEl = document.createElement("span");
+        langEl.className = "code-lang";
+        langEl.textContent = lang;
+
+        const copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "copy-btn";
+        copyBtn.textContent = "Copy";
+        copyBtn.addEventListener("click", () => copyCode(codeText, copyBtn));
+
+        head.appendChild(langEl);
+        head.appendChild(copyBtn);
+
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
+        pre.appendChild(code);
+        renderHighlightedCode(code, codeText, lang);
+
+        figure.appendChild(head);
+        figure.appendChild(pre);
+        return figure;
+      }
+
+      function buildTableBlock(rowsText) {
+        const rows = markdownTableToRows(rowsText);
+        if (!rows.length) {
+          const fallback = document.createElement("p");
+          fallback.textContent = rowsText;
+          return fallback;
+        }
+
+        const wrap = document.createElement("div");
+        wrap.className = "table-wrap";
+        const table = document.createElement("table");
+        table.className = "table-grid";
+        const tbody = document.createElement("tbody");
+
+        rows.forEach((row, rowIndex) => {
+          const tr = document.createElement("tr");
+          row.forEach((value) => {
+            const cell = document.createElement(rowIndex === 0 ? "th" : "td");
+            cell.textContent = String(value || "");
+            tr.appendChild(cell);
+          });
+          tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+        wrap.appendChild(table);
+        return wrap;
+      }
+
+      function renderToc(headings) {
+        tocListEl.innerHTML = "";
+        if (!headings.length) {
+          tocListEl.hidden = true;
+          tocEmptyEl.hidden = false;
+          return;
+        }
+
+        tocEmptyEl.hidden = true;
+        tocListEl.hidden = false;
+
+        const frag = document.createDocumentFragment();
+        headings.forEach((item) => {
+          const link = document.createElement("a");
+          link.className = "toc-item l" + item.level;
+          link.href = "#" + item.id;
+          link.textContent = item.text;
+          frag.appendChild(link);
+        });
+        tocListEl.appendChild(frag);
+      }
+
+      function renderPrevNext(posts, index) {
+        if (index < 0 || !posts.length) {
+          prevNextEl.hidden = true;
+          return;
+        }
+
+        const newer = index > 0 ? posts[index - 1] : null;
+        const older = index < posts.length - 1 ? posts[index + 1] : null;
+
+        if (!newer && !older) {
+          prevNextEl.hidden = true;
+          return;
+        }
+
+        prevNextEl.hidden = false;
+
+        if (newer) {
+          newerLinkEl.hidden = false;
+          newerLinkEl.href = "./post.html?id=" + encodeURIComponent(newer.id);
+          newerLinkEl.textContent = "Newer: " + (newer.title || "Untitled");
+        } else {
+          newerLinkEl.hidden = true;
+        }
+
+        if (older) {
+          olderLinkEl.hidden = false;
+          olderLinkEl.href = "./post.html?id=" + encodeURIComponent(older.id);
+          olderLinkEl.textContent = "Older: " + (older.title || "Untitled");
+        } else {
+          olderLinkEl.hidden = true;
+        }
+      }
+
+      function buildMeta(post) {
+        const plain = buildPlainText(post);
+        const stat = estimateReadStats(plain);
+        return "Updated " + formatDate(post.updatedAt) + " · " + stat.minutes + " min read · " + stat.words + " words";
+      }
+
+      function buildPlainText(post) {
+        if (Array.isArray(post.blocks) && post.blocks.length) {
+          return post.blocks.map((item) => {
+            if (!item || typeof item !== "object") return "";
+            if (item.type === "table") return String(item.rows || "");
+            if (item.type === "code") return String(item.code || "");
+            return String(item.text || "");
+          }).join("\n");
+        }
+        return String(post.content || "");
+      }
+
+      function estimateReadStats(text) {
+        const value = String(text || "");
+        const latinWords = value.trim().split(/\s+/).filter(Boolean).length;
+        const cjkChars = (value.match(/[\u3400-\u9fff]/g) || []).length;
+        const weighted = latinWords + cjkChars;
+        const minutes = Math.max(1, Math.ceil(weighted / 220));
+        return {
+          minutes: minutes,
+          words: weighted
+        };
+      }
+
+      function bindScrollProgress() {
+        window.addEventListener("scroll", updateProgress, { passive: true });
+        window.addEventListener("resize", updateProgress);
+      }
+
+      function updateProgress() {
+        const maxScrollable = document.documentElement.scrollHeight - window.innerHeight;
+        if (maxScrollable <= 0) {
+          progressBarEl.style.width = "0%";
+          return;
+        }
+        const ratio = Math.min(1, Math.max(0, window.scrollY / maxScrollable));
+        progressBarEl.style.width = String((ratio * 100).toFixed(1)) + "%";
+      }
+
+      function parseMarkdownToBlocks(markdown) {
+        const lines = String(markdown || "").replace(/\r\n?/g, "\n").split("\n");
+        const blocks = [];
+        let i = 0;
+
+        while (i < lines.length) {
+          const line = lines[i];
+          if (!line || !line.trim()) {
+            i += 1;
+            continue;
+          }
+
+          const codeMatch = line.match(/^```([^`]*)$/);
+          if (codeMatch) {
+            const lang = String(codeMatch[1] || "").trim();
+            const buff = [];
+            i += 1;
+            while (i < lines.length && !/^```/.test(lines[i])) {
+              buff.push(lines[i]);
+              i += 1;
+            }
+            if (i < lines.length && /^```/.test(lines[i])) i += 1;
+            blocks.push({ type: "code", lang: lang, code: buff.join("\n") });
+            continue;
+          }
+
+          const headingMatch = line.match(/^(#{1,3})\s+(.+)$/);
+          if (headingMatch) {
+            blocks.push({
+              type: "heading",
+              level: headingMatch[1].length,
+              text: headingMatch[2]
+            });
+            i += 1;
+            continue;
+          }
+
+          if (/^\s*>/.test(line)) {
+            const buff = [];
+            while (i < lines.length && /^\s*>/.test(lines[i])) {
+              buff.push(lines[i].replace(/^\s*>\s?/, ""));
+              i += 1;
+            }
+            blocks.push({ type: "quote", text: buff.join("\n") });
+            continue;
+          }
+
+          if (looksLikeTableStart(lines, i)) {
+            const buff = [];
+            while (i < lines.length && lines[i].includes("|")) {
+              buff.push(lines[i]);
+              i += 1;
+            }
+            blocks.push({ type: "table", rows: buff.join("\n") });
+            continue;
+          }
+
+          const paragraph = [];
+          while (i < lines.length) {
+            const next = lines[i];
+            if (!next.trim()) break;
+            if (/^```/.test(next)) break;
+            if (/^(#{1,3})\s+/.test(next)) break;
+            if (/^\s*>/.test(next)) break;
+            if (looksLikeTableStart(lines, i)) break;
+            paragraph.push(next);
+            i += 1;
+          }
+          blocks.push({ type: "paragraph", text: paragraph.join("\n") });
+        }
+
+        return blocks;
+      }
+
+      function looksLikeTableStart(lines, index) {
+        const current = String(lines[index] || "");
+        const next = String(lines[index + 1] || "");
+        if (!current.includes("|")) return false;
+        return /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/.test(next);
+      }
+
+      function markdownTableToRows(text) {
+        const lines = String(text || "")
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean);
+
+        if (lines.length < 2) return [];
+
+        const parsed = lines.map((line) => parseTableRow(line));
+        const rows = [parsed[0]];
+
+        for (let i = 1; i < parsed.length; i += 1) {
+          if (i === 1 && isSeparatorRow(parsed[i])) continue;
+          rows.push(parsed[i]);
+        }
+
+        if (!rows.length) return [];
+        const cols = Math.max(1, ...rows.map((row) => row.length));
+        return rows.map((row) => {
+          const next = row.slice(0, cols);
+          while (next.length < cols) next.push("");
+          return next;
+        });
+      }
+
+      function parseTableRow(line) {
+        const cleaned = String(line || "").replace(/^\|/, "").replace(/\|$/, "");
+        return cleaned.split("|").map((cell) => cell.trim());
+      }
+
+      function isSeparatorRow(row) {
+        return row.every((cell) => /^:?-{2,}:?$/.test(String(cell || "").replace(/\s+/g, "")));
+      }
+
+      function renderHighlightedCode(codeEl, codeText, lang) {
+        const language = normalizeCodeLanguage(lang);
+        const hljs = window.hljs;
+        if (hljs && language && hljs.getLanguage(language)) {
+          codeEl.innerHTML = hljs.highlight(codeText, { language: language, ignoreIllegals: true }).value;
+          return;
+        }
+        codeEl.textContent = codeText;
+      }
+
+      function normalizeCodeLanguage(value) {
+        const input = String(value || "").trim().toLowerCase();
+        const map = {
+          cpp: "cpp",
+          "c++": "cpp",
+          cxx: "cpp",
+          cc: "cpp",
+          py: "python",
+          python: "python",
+          js: "javascript",
+          javascript: "javascript",
+          ts: "typescript",
+          typescript: "typescript",
+          java: "java",
+          go: "go",
+          rust: "rust",
+          cs: "csharp",
+          "c#": "csharp",
+          csharp: "csharp",
+          sh: "bash",
+          bash: "bash",
+          sql: "sql"
+        };
+        return map[input] || input || "";
+      }
+
+      async function copyCode(text, button) {
+        const fallback = () => {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.setAttribute("readonly", "readonly");
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand("copy");
+          } catch {
+            // no-op
+          }
+          document.body.removeChild(textarea);
+        };
+
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            fallback();
+          }
+          const previous = button.textContent;
+          button.textContent = "Copied";
+          window.setTimeout(() => {
+            button.textContent = previous || "Copy";
+          }, 1200);
+        } catch {
+          fallback();
+          const previous = button.textContent;
+          button.textContent = "Copied";
+          window.setTimeout(() => {
+            button.textContent = previous || "Copy";
+          }, 1200);
+        }
+      }
+
+      function createHeadingId(text, usedIds) {
+        const base = slugify(text) || "section";
+        let next = base;
+        let suffix = 2;
+        while (usedIds.has(next)) {
+          next = base + "-" + suffix;
+          suffix += 1;
+        }
+        usedIds.add(next);
+        return next;
+      }
+
+      function slugify(text) {
+        return String(text || "")
+          .toLowerCase()
+          .replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, "")
+          .trim()
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .slice(0, 60);
+      }
+
+      function sortForReadPage(a, b) {
+        const pin = Number(b.favorite === true) - Number(a.favorite === true);
+        if (pin !== 0) return pin;
+        return Number(new Date(b.updatedAt)) - Number(new Date(a.updatedAt));
+      }
+
+      function normalizeHeadingLevel(value) {
+        const level = Number(value);
+        if (level === 1 || level === 2 || level === 3) return level;
+        return 2;
+      }
+
+      function formatDate(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "Unknown";
+        return date.toLocaleString();
+      }
+    })();
+  </script>
+</body>
+</html>

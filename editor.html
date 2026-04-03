@@ -36,6 +36,7 @@
 
     body {
       font-family: "Manrope", "Noto Sans SC", sans-serif;
+      font-size: 17px;
       color: var(--text);
       background:
         radial-gradient(42rem 24rem at -10% -10%, rgba(113, 132, 255, 0.2), transparent 62%),
@@ -379,6 +380,7 @@
       inset: 0;
       pointer-events: none;
       overflow: auto;
+      scrollbar-gutter: stable both-edges;
       padding: 0.64rem 0.72rem;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 0.95rem;
@@ -412,7 +414,9 @@
       line-height: 1.65;
       min-height: 180px;
       resize: vertical;
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x: auto;
+      scrollbar-gutter: stable both-edges;
       white-space: pre;
     }
 
@@ -1026,7 +1030,7 @@
 
           const codeArea = createTextarea(block.code, "Write code here...");
           codeArea.classList.add("code-input-layer");
-          codeArea.dataset.keepHeight = "true";
+          codeArea.dataset.autoGrow = "false";
           codeArea.spellcheck = false;
           codeArea.style.minHeight = "180px";
           codeArea.style.height = normalizeCodeHeight(block.height) + "px";
@@ -1146,20 +1150,20 @@
           if (card) activeBlockId = card.dataset.blockId;
         });
         textarea.addEventListener("input", () => {
-          autoGrowTextarea(textarea);
+          if (textarea.dataset.autoGrow !== "false") {
+            autoGrowTextarea(textarea);
+          }
         });
-        autoGrowTextarea(textarea);
+        if (textarea.dataset.autoGrow !== "false") {
+          autoGrowTextarea(textarea);
+        }
         return textarea;
       }
 
       function autoGrowTextarea(textarea) {
-        const currentHeight = textarea.offsetHeight || 0;
         textarea.style.height = "auto";
         const minHeight = Number.parseInt(textarea.style.minHeight || "96", 10) || 96;
-        const keepHeight = textarea.dataset.keepHeight === "true";
-        const next = keepHeight
-          ? Math.max(minHeight, textarea.scrollHeight, currentHeight)
-          : Math.max(minHeight, textarea.scrollHeight);
+        const next = Math.max(minHeight, textarea.scrollHeight);
         textarea.style.height = next + "px";
       }
 

@@ -166,6 +166,14 @@
       gap: 0.6rem;
     }
 
+    .profile-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
     .hero-profile h2 {
       margin: 0;
       font-size: 1.12rem;
@@ -195,6 +203,92 @@
       color: #3b4368;
       font-size: 0.86rem;
       font-weight: 600;
+    }
+
+    .mini-btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: #fff;
+      color: #3d4671;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.3rem 0.62rem;
+      cursor: pointer;
+    }
+
+    .mini-btn:hover {
+      border-color: #9fafe6;
+      background: #f6f8ff;
+    }
+
+    .profile-editor {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfcff;
+      padding: 0.58rem;
+      display: grid;
+      gap: 0.48rem;
+    }
+
+    .profile-field {
+      display: grid;
+      gap: 0.2rem;
+    }
+
+    .profile-field label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .profile-input {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 0.45rem 0.52rem;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 0.34rem;
+      flex-wrap: wrap;
+    }
+
+    .undo-toast {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      border: 1px solid #c8d2ff;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 14px 28px rgba(49, 58, 118, 0.18);
+      padding: 0.55rem 0.68rem;
+      display: flex;
+      align-items: center;
+      gap: 0.42rem;
+      z-index: 20;
+      max-width: min(92vw, 420px);
+      flex-wrap: wrap;
+    }
+
+    .undo-text {
+      margin: 0;
+      color: #2f375c;
+      font-size: 0.86rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .undo-time {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
     }
 
     .status {
@@ -324,7 +418,9 @@
     }
 
     .primary-link:focus-visible,
-    .btn:focus-visible {
+    .btn:focus-visible,
+    .mini-btn:focus-visible,
+    .profile-input:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
       outline-offset: 2px;
     }
@@ -360,14 +456,37 @@
         <div class="count-badge">Total Notes: <span id="post-count">0</span></div>
       </div>
       <aside class="hero-profile">
-        <h2>About Me</h2>
-        <ul class="profile-list">
-          <li>Focus: mobile / frontend / dev tools</li>
-          <li>Current goal: publish notes every week</li>
-          <li>Format: markdown + practical code snippets</li>
-        </ul>
+        <div class="profile-head">
+          <h2>About Me</h2>
+          <button id="profile-edit-btn" class="mini-btn" type="button">Edit</button>
+        </div>
+        <ul id="profile-list" class="profile-list"></ul>
+        <div id="profile-editor" class="profile-editor" hidden>
+          <div class="profile-field">
+            <label for="profile-input-1">Line 1</label>
+            <input id="profile-input-1" class="profile-input" type="text" maxlength="120" placeholder="Focus...">
+          </div>
+          <div class="profile-field">
+            <label for="profile-input-2">Line 2</label>
+            <input id="profile-input-2" class="profile-input" type="text" maxlength="120" placeholder="Current goal...">
+          </div>
+          <div class="profile-field">
+            <label for="profile-input-3">Line 3</label>
+            <input id="profile-input-3" class="profile-input" type="text" maxlength="120" placeholder="Format...">
+          </div>
+          <div class="profile-actions">
+            <button id="profile-save-btn" class="mini-btn" type="button">Save</button>
+            <button id="profile-cancel-btn" class="mini-btn" type="button">Cancel</button>
+          </div>
+        </div>
       </aside>
     </section>
+
+    <div id="undo-toast" class="undo-toast" hidden>
+      <p class="undo-text">Note deleted.</p>
+      <button id="undo-btn" class="mini-btn" type="button">Undo</button>
+      <span id="undo-time" class="undo-time">5s</span>
+    </div>
 
     <div id="saved-status" class="status" hidden>Note saved successfully.</div>
 
@@ -387,15 +506,43 @@
   <script src="./posts-store.js"></script>
   <script>
     (() => {
+      const PROFILE_STORAGE_KEY = "sugar_profile_v1";
+      const PROFILE_DEFAULT_LINES = [
+        "Focus: mobile / frontend / dev tools",
+        "Current goal: publish notes every week",
+        "Format: markdown + practical code snippets"
+      ];
+      const UNDO_WINDOW_MS = 5000;
+
       const listEl = document.getElementById("posts-list");
       const emptyEl = document.getElementById("empty-state");
       const countEl = document.getElementById("post-count");
       const savedStatusEl = document.getElementById("saved-status");
+      const undoToastEl = document.getElementById("undo-toast");
+      const undoBtnEl = document.getElementById("undo-btn");
+      const undoTimeEl = document.getElementById("undo-time");
+      const undoTextEl = undoToastEl.querySelector(".undo-text");
+
+      const profileListEl = document.getElementById("profile-list");
+      const profileEditBtn = document.getElementById("profile-edit-btn");
+      const profileEditorEl = document.getElementById("profile-editor");
+      const profileSaveBtn = document.getElementById("profile-save-btn");
+      const profileCancelBtn = document.getElementById("profile-cancel-btn");
+      const profileInputs = [
+        document.getElementById("profile-input-1"),
+        document.getElementById("profile-input-2"),
+        document.getElementById("profile-input-3")
+      ];
+
+      let pendingDelete = null;
+      let profileLines = readProfileLines();
 
       init();
 
       function init() {
         showSavedStatusIfNeeded();
+        bindProfileEvents();
+        renderProfile();
         render();
       }
 
@@ -466,9 +613,137 @@
       }
 
       function onDelete(id) {
-        if (!window.confirm("Delete this note?")) return;
+        const post = postStore.getPostById(id);
+        if (!post) return;
+        if (!window.confirm("Delete this note? You can undo within 5 seconds.")) return;
+
+        finalizePendingDelete();
         postStore.deletePost(id);
         render();
+        showUndoToast(post);
+      }
+
+      function showUndoToast(post) {
+        const removedPost = clonePost(post);
+        if (!removedPost) return;
+
+        pendingDelete = {
+          post: removedPost,
+          expiresAt: Date.now() + UNDO_WINDOW_MS,
+          timeoutId: null,
+          intervalId: null
+        };
+
+        undoTextEl.textContent = "Deleted: " + (removedPost.title || "Untitled");
+        undoToastEl.hidden = false;
+        updateUndoCountdown();
+
+        pendingDelete.timeoutId = window.setTimeout(() => {
+          finalizePendingDelete();
+        }, UNDO_WINDOW_MS);
+        pendingDelete.intervalId = window.setInterval(updateUndoCountdown, 200);
+      }
+
+      function updateUndoCountdown() {
+        if (!pendingDelete) return;
+        const remainMs = Math.max(0, pendingDelete.expiresAt - Date.now());
+        const sec = Math.max(0, Math.ceil(remainMs / 1000));
+        undoTimeEl.textContent = sec + "s";
+      }
+
+      function onUndoDelete() {
+        if (!pendingDelete || !pendingDelete.post) return;
+
+        const posts = postStore.readPosts();
+        const exists = posts.some((item) => item.id === pendingDelete.post.id);
+        if (!exists) {
+          posts.push(pendingDelete.post);
+          postStore.writePosts(posts);
+        }
+
+        finalizePendingDelete();
+        render();
+      }
+
+      function finalizePendingDelete() {
+        if (!pendingDelete) return;
+        if (pendingDelete.timeoutId) window.clearTimeout(pendingDelete.timeoutId);
+        if (pendingDelete.intervalId) window.clearInterval(pendingDelete.intervalId);
+        pendingDelete = null;
+        undoToastEl.hidden = true;
+      }
+
+      function clonePost(post) {
+        try {
+          return JSON.parse(JSON.stringify(post));
+        } catch {
+          return null;
+        }
+      }
+
+      function bindProfileEvents() {
+        profileEditBtn.addEventListener("click", openProfileEditor);
+        profileSaveBtn.addEventListener("click", onProfileSave);
+        profileCancelBtn.addEventListener("click", closeProfileEditor);
+        undoBtnEl.addEventListener("click", onUndoDelete);
+      }
+
+      function openProfileEditor() {
+        const lines = profileLines.slice(0, 3);
+        while (lines.length < 3) lines.push("");
+        profileInputs.forEach((input, index) => {
+          input.value = lines[index];
+        });
+        profileEditorEl.hidden = false;
+        profileEditBtn.textContent = "Editing";
+        profileEditBtn.disabled = true;
+      }
+
+      function closeProfileEditor() {
+        profileEditorEl.hidden = true;
+        profileEditBtn.textContent = "Edit";
+        profileEditBtn.disabled = false;
+      }
+
+      function onProfileSave() {
+        const next = profileInputs
+          .map((input) => String(input.value || "").trim())
+          .filter((item) => item);
+        profileLines = next.length ? next.slice(0, 3) : PROFILE_DEFAULT_LINES.slice();
+        writeProfileLines(profileLines);
+        renderProfile();
+        closeProfileEditor();
+      }
+
+      function renderProfile() {
+        profileListEl.innerHTML = "";
+        profileLines.forEach((line) => {
+          const li = document.createElement("li");
+          li.textContent = line;
+          profileListEl.appendChild(li);
+        });
+      }
+
+      function readProfileLines() {
+        const raw = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+        if (!raw) return PROFILE_DEFAULT_LINES.slice();
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed || !Array.isArray(parsed.lines)) return PROFILE_DEFAULT_LINES.slice();
+          const lines = parsed.lines
+            .map((item) => String(item || "").trim().slice(0, 120))
+            .filter((item) => item);
+          return lines.length ? lines.slice(0, 3) : PROFILE_DEFAULT_LINES.slice();
+        } catch {
+          return PROFILE_DEFAULT_LINES.slice();
+        }
+      }
+
+      function writeProfileLines(lines) {
+        const payload = {
+          lines: Array.isArray(lines) ? lines.slice(0, 3) : PROFILE_DEFAULT_LINES.slice()
+        };
+        window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(payload));
       }
 
       function showSavedStatusIfNeeded() {

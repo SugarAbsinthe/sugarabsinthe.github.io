@@ -21,7 +21,7 @@
       --radius-lg: 20px;
       --radius-md: 12px;
       --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
-      --max-width: 960px;
+      --max-width: 1040px;
     }
 
     * { box-sizing: border-box; }
@@ -164,12 +164,51 @@
       padding: 0.56rem 0.64rem;
     }
 
-    .actions {
-      margin-top: 0.95rem;
+    .items-wrap {
+      margin-top: 0.25rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fafbff;
+      padding: 0.7rem;
+      display: grid;
+      gap: 0.56rem;
+    }
+
+    .items-head {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.44rem;
       align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .items-list {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .item-row {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 0.5rem;
+      display: grid;
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) auto;
+      gap: 0.45rem;
+      align-items: end;
+    }
+
+    .item-remove {
+      border: 1px solid #efb1c4;
+      border-radius: 9px;
+      background: #fff5f8;
+      color: #c13c64;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.46rem 0.58rem;
+      cursor: pointer;
+      min-height: 39px;
+      white-space: nowrap;
     }
 
     .btn {
@@ -197,6 +236,14 @@
       background: #fff5f8;
     }
 
+    .actions {
+      margin-top: 0.95rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.44rem;
+      align-items: center;
+    }
+
     .status {
       margin: 0;
       color: var(--muted);
@@ -208,12 +255,26 @@
     .status.error { color: #b42e51; }
     .status.success { color: #2f7a4e; }
 
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
     .input:focus-visible,
     .btn:focus-visible,
     .btn-link:focus-visible,
+    .item-remove:focus-visible,
     .brand:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
       outline-offset: 2px;
+    }
+
+    @media (max-width: 860px) {
+      .item-row {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 720px) {
@@ -257,20 +318,14 @@
           <input id="quote-input" class="input" type="text" maxlength="140" placeholder="Live like summer flowers.">
         </label>
 
-        <label class="field" for="focus-input">
-          <span class="label">Focus</span>
-          <input id="focus-input" class="input" type="text" maxlength="140" placeholder="mobile / frontend / dev tools">
-        </label>
-
-        <label class="field" for="goal-input">
-          <span class="label">Current Goal</span>
-          <input id="goal-input" class="input" type="text" maxlength="140" placeholder="publish notes every week">
-        </label>
-
-        <label class="field" for="format-input">
-          <span class="label">Format</span>
-          <input id="format-input" class="input" type="text" maxlength="140" placeholder="markdown + practical code snippets">
-        </label>
+        <section class="items-wrap" aria-label="Custom profile items">
+          <div class="items-head">
+            <span class="label">Profile Items</span>
+            <button id="add-item-btn" class="btn" type="button">+ Add Item</button>
+          </div>
+          <div id="items-list" class="items-list"></div>
+          <p class="hint">Each row has a custom name and value. Empty row will be ignored on save.</p>
+        </section>
       </form>
 
       <div class="actions">
@@ -287,9 +342,8 @@
     (() => {
       const titleInput = document.getElementById("title-input");
       const quoteInput = document.getElementById("quote-input");
-      const focusInput = document.getElementById("focus-input");
-      const goalInput = document.getElementById("goal-input");
-      const formatInput = document.getElementById("format-input");
+      const itemsListEl = document.getElementById("items-list");
+      const addItemBtn = document.getElementById("add-item-btn");
       const saveBtn = document.getElementById("save-btn");
       const resetBtn = document.getElementById("reset-btn");
       const statusEl = document.getElementById("status");
@@ -298,17 +352,41 @@
 
       function init() {
         renderForm(postStore.readProfile());
+        bindEvents();
+      }
+
+      function bindEvents() {
+        addItemBtn.addEventListener("click", () => {
+          appendItemRow({ label: "", value: "" }, true);
+        });
+
+        itemsListEl.addEventListener("click", (event) => {
+          const removeBtn = event.target.closest("[data-remove-item]");
+          if (!removeBtn) return;
+          const row = removeBtn.closest(".item-row");
+          if (!row) return;
+          row.remove();
+          if (!itemsListEl.children.length) {
+            appendItemRow({ label: "", value: "" }, false);
+          }
+        });
+
         saveBtn.addEventListener("click", onSave);
         resetBtn.addEventListener("click", onReset);
       }
 
       function onSave() {
+        const collection = collectItemsFromForm();
+        if (!collection.ok) {
+          setStatus(collection.reason, "error");
+          if (collection.focusEl) collection.focusEl.focus();
+          return;
+        }
+
         postStore.updateProfile({
           title: titleInput.value,
           quote: quoteInput.value,
-          focus: focusInput.value,
-          goal: goalInput.value,
-          format: formatInput.value
+          items: collection.items
         });
 
         renderForm(postStore.readProfile());
@@ -325,9 +403,111 @@
       function renderForm(profile) {
         titleInput.value = profile.title || "";
         quoteInput.value = profile.quote || "";
-        focusInput.value = profile.focus || "";
-        goalInput.value = profile.goal || "";
-        formatInput.value = profile.format || "";
+
+        itemsListEl.innerHTML = "";
+        const rows = Array.isArray(profile.items) ? profile.items : [];
+        if (!rows.length) {
+          appendItemRow({ label: "", value: "" }, false);
+          return;
+        }
+
+        rows.forEach((row) => {
+          appendItemRow(row, false);
+        });
+      }
+
+      function appendItemRow(seed, focusLabelInput) {
+        const row = document.createElement("div");
+        row.className = "item-row";
+
+        const labelField = document.createElement("label");
+        labelField.className = "field";
+        const labelTag = document.createElement("span");
+        labelTag.className = "label";
+        labelTag.textContent = "Name";
+        const labelInput = document.createElement("input");
+        labelInput.className = "input";
+        labelInput.type = "text";
+        labelInput.maxLength = 32;
+        labelInput.placeholder = "e.g. Focus";
+        labelInput.value = String((seed && seed.label) || "");
+        labelField.appendChild(labelTag);
+        labelField.appendChild(labelInput);
+
+        const valueField = document.createElement("label");
+        valueField.className = "field";
+        const valueTag = document.createElement("span");
+        valueTag.className = "label";
+        valueTag.textContent = "Value";
+        const valueInput = document.createElement("input");
+        valueInput.className = "input";
+        valueInput.type = "text";
+        valueInput.maxLength = 180;
+        valueInput.placeholder = "e.g. mobile / frontend / dev tools";
+        valueInput.value = String((seed && seed.value) || "");
+        valueField.appendChild(valueTag);
+        valueField.appendChild(valueInput);
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "item-remove";
+        removeBtn.dataset.removeItem = "1";
+        removeBtn.textContent = "Remove";
+
+        row.appendChild(labelField);
+        row.appendChild(valueField);
+        row.appendChild(removeBtn);
+        itemsListEl.appendChild(row);
+
+        if (focusLabelInput) {
+          labelInput.focus();
+        }
+      }
+
+      function collectItemsFromForm() {
+        const rows = Array.from(itemsListEl.querySelectorAll(".item-row"));
+        const items = [];
+
+        for (let i = 0; i < rows.length; i += 1) {
+          const row = rows[i];
+          const inputs = row.querySelectorAll(".input");
+          const labelInput = inputs[0];
+          const valueInput = inputs[1];
+          const label = String(labelInput && labelInput.value || "").trim();
+          const value = String(valueInput && valueInput.value || "").trim();
+
+          if (!label && !value) continue;
+
+          if (!label || !value) {
+            return {
+              ok: false,
+              reason: "Each item needs both name and value.",
+              focusEl: !label ? labelInput : valueInput,
+              items: []
+            };
+          }
+
+          items.push({
+            label: label,
+            value: value
+          });
+        }
+
+        if (items.length > 12) {
+          return {
+            ok: false,
+            reason: "You can save up to 12 profile items.",
+            focusEl: null,
+            items: []
+          };
+        }
+
+        return {
+          ok: true,
+          reason: "",
+          focusEl: null,
+          items: items
+        };
       }
 
       function setStatus(message, type) {

@@ -239,12 +239,12 @@
   function sanitizeProfile(item) {
     const defaults = defaultProfile();
     const source = item && typeof item === "object" ? item : {};
+    const hasItemsArray = Array.isArray(source.items);
+    const baseItems = hasItemsArray ? source.items : buildLegacyProfileItems(source, defaults);
     return {
       title: normalizeProfileText(source.title, defaults.title, 48),
       quote: normalizeProfileText(source.quote, defaults.quote, 140),
-      focus: normalizeProfileText(source.focus, defaults.focus, 140),
-      goal: normalizeProfileText(source.goal, defaults.goal, 140),
-      format: normalizeProfileText(source.format, defaults.format, 140),
+      items: normalizeProfileItems(baseItems, defaults.items),
       updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : ""
     };
   }
@@ -253,9 +253,11 @@
     return {
       title: "About Me",
       quote: "Live like summer flowers.",
-      focus: "mobile / frontend / dev tools",
-      goal: "publish notes every week",
-      format: "markdown + practical code snippets",
+      items: [
+        { label: "Focus", value: "mobile / frontend / dev tools" },
+        { label: "Current goal", value: "publish notes every week" },
+        { label: "Format", value: "markdown + practical code snippets" }
+      ],
       updatedAt: ""
     };
   }
@@ -307,6 +309,48 @@
     const next = String(value || "").trim();
     if (!next) return String(fallback || "");
     return next.slice(0, maxLength);
+  }
+
+  function normalizeOptionalProfileText(value, maxLength) {
+    return String(value || "").trim().slice(0, maxLength);
+  }
+
+  function sanitizeProfileItem(item) {
+    if (!item || typeof item !== "object") return null;
+    const label = normalizeOptionalProfileText(item.label, 32);
+    const value = normalizeOptionalProfileText(item.value, 180);
+    if (!label || !value) return null;
+    return { label: label, value: value };
+  }
+
+  function normalizeProfileItems(items, fallbackItems) {
+    const fallbackNormalized = (Array.isArray(fallbackItems) ? fallbackItems : [])
+      .map((item) => sanitizeProfileItem(item))
+      .filter(Boolean)
+      .slice(0, 12);
+
+    if (Array.isArray(items)) {
+      return items
+        .map((item) => sanitizeProfileItem(item))
+        .filter(Boolean)
+        .slice(0, 12);
+    }
+
+    return fallbackNormalized;
+  }
+
+  function buildLegacyProfileItems(source, defaults) {
+    const items = [];
+    const focus = normalizeOptionalProfileText(source.focus, 180);
+    const goal = normalizeOptionalProfileText(source.goal, 180);
+    const format = normalizeOptionalProfileText(source.format, 180);
+
+    if (focus) items.push({ label: "Focus", value: focus });
+    if (goal) items.push({ label: "Current goal", value: goal });
+    if (format) items.push({ label: "Format", value: format });
+
+    if (items.length) return items;
+    return defaults.items;
   }
 
   function hasEssentialFields(item) {

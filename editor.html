@@ -1517,7 +1517,7 @@
 
       function parseTags(value) {
         const raw = String(value || "");
-        const parts = raw.split(/[,，\n]/g);
+        const parts = raw.split(/[,\uFF0C\n]/g);
         return normalizeTags(parts);
       }
 

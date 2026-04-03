@@ -1,5 +1,7 @@
 (() => {
   const STORAGE_KEY = "astro_blog_posts_v1";
+  const EXPORT_VERSION = 1;
+  const STORAGE_SOFT_LIMIT_BYTES = 4.5 * 1024 * 1024;
 
   function readPosts() {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -17,7 +19,9 @@
   }
 
   function writePosts(posts) {
-    const normalized = Array.isArray(posts) ? posts.map((item) => sanitizePost(item)) : [];
+    const normalized = Array.isArray(posts)
+      ? posts.map((item) => sanitizePost(item)).filter((item) => hasEssentialFields(item))
+      : [];
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
   }
 
@@ -62,6 +66,120 @@
   function deletePost(id) {
     const posts = readPosts().filter((item) => item.id !== id);
     writePosts(posts);
+  }
+
+  function exportBundle() {
+    return {
+      version: EXPORT_VERSION,
+      exportedAt: new Date().toISOString(),
+      source: "SugarAbsinthe Notes",
+      posts: readPosts()
+    };
+  }
+
+  function importBundle(input, options) {
+    const mode = options && options.mode === "replace" ? "replace" : "merge";
+    const current = readPosts();
+    const parsed = typeof input === "string" ? safeParseJson(input) : input;
+    if (!parsed) {
+      return {
+        ok: false,
+        mode,
+        reason: "Invalid JSON format.",
+        imported: 0,
+        inserted: 0,
+        updated: 0,
+        skipped: 0,
+        total: current.length
+      };
+    }
+
+    const importedRaw = extractImportedPosts(parsed);
+    if (!importedRaw.length) {
+      return {
+        ok: false,
+        mode,
+        reason: "No post records found.",
+        imported: 0,
+        inserted: 0,
+        updated: 0,
+        skipped: 0,
+        total: current.length
+      };
+    }
+
+    const now = new Date().toISOString();
+    const imported = importedRaw
+      .map((item) => sanitizePost({
+        ...item,
+        id: item && item.id ? String(item.id) : createId(),
+        createdAt: item && item.createdAt ? String(item.createdAt) : now,
+        updatedAt: item && item.updatedAt ? String(item.updatedAt) : now
+      }))
+      .filter((item) => hasEssentialFields(item));
+
+    if (!imported.length) {
+      return {
+        ok: false,
+        mode,
+        reason: "No valid posts after validation.",
+        imported: importedRaw.length,
+        inserted: 0,
+        updated: 0,
+        skipped: importedRaw.length,
+        total: current.length
+      };
+    }
+
+    const base = mode === "replace" ? [] : current;
+    const map = new Map(base.map((item) => [item.id, item]));
+    let inserted = 0;
+    let updated = 0;
+
+    imported.forEach((item) => {
+      if (map.has(item.id)) {
+        const previous = map.get(item.id);
+        map.set(item.id, {
+          ...previous,
+          ...item,
+          createdAt: previous && previous.createdAt ? previous.createdAt : item.createdAt
+        });
+        updated += 1;
+      } else {
+        map.set(item.id, item);
+        inserted += 1;
+      }
+    });
+
+    const nextPosts = Array.from(map.values());
+    writePosts(nextPosts);
+
+    return {
+      ok: true,
+      mode,
+      reason: "",
+      imported: importedRaw.length,
+      inserted,
+      updated,
+      skipped: Math.max(0, importedRaw.length - imported.length),
+      total: nextPosts.length
+    };
+  }
+
+  function getStorageStats() {
+    const raw = window.localStorage.getItem(STORAGE_KEY) || "[]";
+    const usedBytes = byteLength(raw);
+    const softLimitBytes = STORAGE_SOFT_LIMIT_BYTES;
+    const percent = Math.min(999, Math.round((usedBytes / softLimitBytes) * 100));
+    return {
+      usedBytes,
+      usedKB: Number((usedBytes / 1024).toFixed(1)),
+      softLimitBytes,
+      softLimitKB: Number((softLimitBytes / 1024).toFixed(1)),
+      percent,
+      warning: usedBytes >= softLimitBytes * 0.8,
+      critical: usedBytes >= softLimitBytes
+    };
   }
 
   function sanitizePost(item) {
@@ -120,6 +238,32 @@
     return normalized.slice(0, 12);
   }
 
+  function hasEssentialFields(item) {
+    return !!(item && item.id && item.title);
+  }
+
+  function extractImportedPosts(parsed) {
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === "object" && Array.isArray(parsed.posts)) return parsed.posts;
+    return [];
+  }
+
+  function safeParseJson(raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  function byteLength(text) {
+    const value = String(text || "");
+    if (typeof TextEncoder === "function") {
+      return new TextEncoder().encode(value).length;
+    }
+    return value.length;
+  }
+
   function createId() {
     return "p_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
   }
@@ -129,6 +273,9 @@
     writePosts,
     getPostById,
     upsertPost,
-    deletePost
+    deletePost,
+    exportBundle,
+    importBundle,
+    getStorageStats
   };
 })();

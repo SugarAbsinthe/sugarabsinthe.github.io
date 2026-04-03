@@ -268,6 +268,70 @@
       min-height: 40px;
     }
 
+    .safety-panel {
+      border: 1px dashed var(--line-strong);
+      border-radius: 12px;
+      background: #fcfdff;
+      padding: 0.72rem;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .safety-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .safety-title {
+      margin: 0;
+      color: #2f3b74;
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .storage-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .storage-note.warning {
+      color: #9f6b1f;
+    }
+
+    .storage-note.critical {
+      color: #b42e51;
+    }
+
+    .backup-grid {
+      display: grid;
+      grid-template-columns: auto minmax(180px, 1fr) auto;
+      gap: 0.5rem;
+      align-items: end;
+    }
+
+    .backup-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+      min-height: 1.2em;
+    }
+
+    .backup-status.success {
+      color: #2f7a4e;
+    }
+
+    .backup-status.error {
+      color: #b42e51;
+    }
+
     .posts {
       margin-top: 1rem;
       display: grid;
@@ -454,6 +518,10 @@
       .btn-clear {
         grid-column: 1 / -1;
       }
+
+      .backup-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 720px) {
@@ -530,6 +598,26 @@
         </label>
         <button id="clear-filters" class="btn-clear" type="button">Clear Filters</button>
       </div>
+
+      <div class="safety-panel">
+        <div class="safety-top">
+          <p class="safety-title">Backup And Restore</p>
+          <p id="storage-note" class="storage-note"></p>
+        </div>
+        <div class="backup-grid">
+          <button id="export-json-btn" class="btn-clear" type="button">Export JSON</button>
+          <label class="field" for="import-mode">
+            <span>Import Mode</span>
+            <select id="import-mode">
+              <option value="merge">Merge By ID (Safe)</option>
+              <option value="replace">Replace All Existing</option>
+            </select>
+          </label>
+          <button id="import-json-btn" class="btn-clear" type="button">Import JSON</button>
+        </div>
+        <input id="import-json-file" type="file" accept=".json,application/json" hidden>
+        <p id="backup-status" class="backup-status" aria-live="polite"></p>
+      </div>
     </section>
 
     <main>
@@ -557,6 +645,12 @@
       const tagFilterEl = document.getElementById("tag-filter");
       const sortSelectEl = document.getElementById("sort-select");
       const clearFiltersEl = document.getElementById("clear-filters");
+      const exportJsonBtnEl = document.getElementById("export-json-btn");
+      const importJsonBtnEl = document.getElementById("import-json-btn");
+      const importJsonFileEl = document.getElementById("import-json-file");
+      const importModeEl = document.getElementById("import-mode");
+      const storageNoteEl = document.getElementById("storage-note");
+      const backupStatusEl = document.getElementById("backup-status");
 
       const state = {
         query: "",
@@ -597,6 +691,15 @@
           sortSelectEl.value = state.sort;
           render();
         });
+
+        exportJsonBtnEl.addEventListener("click", onExportJson);
+        importJsonBtnEl.addEventListener("click", () => {
+          importJsonFileEl.click();
+        });
+        importJsonFileEl.addEventListener("change", onImportFileChanged);
+        importModeEl.addEventListener("change", () => {
+          setBackupStatus("", "");
+        });
       }
 
       function render() {
@@ -612,6 +715,7 @@
           listEl.hidden = true;
           emptyEl.hidden = false;
           emptyEl.innerHTML = buildEmptyText(allPosts.length);
+          renderStorageNote();
           return;
         }
 
@@ -688,6 +792,7 @@
         });
 
         listEl.appendChild(frag);
+        renderStorageNote();
       }
 
       function applyFiltersAndSort(posts) {
@@ -745,6 +850,48 @@
         render();
       }
 
+      function onExportJson() {
+        const bundle = postStore.exportBundle();
+        const json = JSON.stringify(bundle, null, 2);
+        const fileName = buildBackupFileName(bundle.exportedAt);
+        downloadFile(json, fileName, "application/json");
+        setBackupStatus("Backup exported successfully.", "success");
+        renderStorageNote();
+      }
+
+      async function onImportFileChanged(event) {
+        const file = event.target.files && event.target.files[0];
+        importJsonFileEl.value = "";
+        if (!file) return;
+
+        let text = "";
+        try {
+          text = await file.text();
+        } catch {
+          setBackupStatus("Failed to read selected file.", "error");
+          return;
+        }
+
+        const mode = importModeEl.value === "replace" ? "replace" : "merge";
+        const confirmMessage = mode === "replace"
+          ? "Replace all existing notes with data from this JSON file?"
+          : "Merge notes from this JSON file into existing notes?";
+        if (!window.confirm(confirmMessage)) return;
+
+        const result = postStore.importBundle(text, { mode: mode });
+        if (!result.ok) {
+          setBackupStatus("Import failed: " + result.reason, "error");
+          renderStorageNote();
+          return;
+        }
+
+        setBackupStatus(
+          "Import complete. Inserted " + result.inserted + ", updated " + result.updated + ", skipped " + result.skipped + ".",
+          "success"
+        );
+        render();
+      }
+
       function renderTagOptions(posts) {
         const tagValues = [];
         const seen = new Set();
@@ -782,6 +929,54 @@
           tagFilterEl.value = "";
           state.tag = "";
         }
+      }
+
+      function renderStorageNote() {
+        const stats = postStore.getStorageStats();
+        storageNoteEl.className = "storage-note";
+        if (stats.warning) storageNoteEl.classList.add("warning");
+        if (stats.critical) storageNoteEl.classList.add("critical");
+        storageNoteEl.textContent = "Storage used: " + formatBytes(stats.usedBytes) + " / ~" + formatBytes(stats.softLimitBytes) + " (" + stats.percent + "%)";
+      }
+
+      function setBackupStatus(message, type) {
+        backupStatusEl.className = "backup-status";
+        if (type === "success") backupStatusEl.classList.add("success");
+        if (type === "error") backupStatusEl.classList.add("error");
+        backupStatusEl.textContent = message;
+      }
+
+      function downloadFile(content, fileName, mimeType) {
+        const blob = new Blob([content], { type: mimeType || "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.setTimeout(() => {
+          URL.revokeObjectURL(link.href);
+        }, 0);
+      }
+
+      function buildBackupFileName(isoTime) {
+        const date = new Date(isoTime || Date.now());
+        const year = String(date.getFullYear());
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hour = String(date.getHours()).padStart(2, "0");
+        const minute = String(date.getMinutes()).padStart(2, "0");
+        const second = String(date.getSeconds()).padStart(2, "0");
+        return "sugarabsinthe-notes-" + year + month + day + "-" + hour + minute + second + ".json";
+      }
+
+      function formatBytes(bytes) {
+        const value = Number(bytes) || 0;
+        if (value < 1024) return value + " B";
+        const kb = value / 1024;
+        if (kb < 1024) return kb.toFixed(1) + " KB";
+        const mb = kb / 1024;
+        return mb.toFixed(2) + " MB";
       }
 
       function showSavedStatusIfNeeded() {

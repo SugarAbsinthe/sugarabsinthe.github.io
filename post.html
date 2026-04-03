@@ -35,6 +35,10 @@
       min-height: 100%;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       font-family: "Manrope", "Noto Sans SC", sans-serif;
       color: var(--text);
@@ -349,6 +353,12 @@
       background: #f4f7ff;
     }
 
+    .toc-item.is-active {
+      background: #eef2ff;
+      color: #2f3b74;
+      border: 1px solid #d4ddff;
+    }
+
     .toc-item.l2 {
       padding-left: 0.78rem;
       font-weight: 600;
@@ -403,10 +413,37 @@
       font-weight: 700;
     }
 
+    .to-top-btn {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      border: 1px solid #cad4ff;
+      border-radius: 999px;
+      background: #fff;
+      color: #2f3b74;
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 0.5rem 0.76rem;
+      box-shadow: 0 12px 24px rgba(52, 63, 120, 0.18);
+      cursor: pointer;
+      transform: translateY(10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+      z-index: 12;
+    }
+
+    .to-top-btn.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     .btn:focus-visible,
     .copy-btn:focus-visible,
     .toc-item:focus-visible,
-    .brand:focus-visible {
+    .brand:focus-visible,
+    .to-top-btn:focus-visible {
       outline: 3px solid rgba(13, 160, 255, 0.35);
       outline-offset: 2px;
     }
@@ -430,6 +467,11 @@
 
       .article {
         padding: 0.9rem;
+      }
+
+      .to-top-btn {
+        right: 0.8rem;
+        bottom: 0.8rem;
       }
     }
   </style>
@@ -476,6 +518,7 @@
       <span><a href="./editor.html">Open Editor</a></span>
     </footer>
   </div>
+  <button id="to-top-btn" class="to-top-btn" type="button" aria-label="Back to top">Top</button>
 
   <script src="./posts-store.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
@@ -493,6 +536,7 @@
       const prevNextEl = document.getElementById("prev-next");
       const newerLinkEl = document.getElementById("newer-link");
       const olderLinkEl = document.getElementById("older-link");
+      const toTopBtnEl = document.getElementById("to-top-btn");
 
       const params = new URLSearchParams(window.location.search);
       const postId = params.get("id") || "";
@@ -502,6 +546,7 @@
       function init() {
         renderPage();
         bindScrollProgress();
+        onViewportChanged();
       }
 
       function renderPage() {
@@ -530,7 +575,7 @@
         renderPrevNext(posts, index);
 
         messageEl.hidden = true;
-        updateProgress();
+        onViewportChanged();
       }
 
       function renderMissing(message) {
@@ -544,6 +589,7 @@
 
         messageEl.hidden = false;
         messageEl.textContent = String(message || "Unable to load note.");
+        onViewportChanged();
       }
 
       function renderTags(tags) {
@@ -709,10 +755,12 @@
           const link = document.createElement("a");
           link.className = "toc-item l" + item.level;
           link.href = "#" + item.id;
+          link.dataset.targetId = item.id;
           link.textContent = item.text;
           frag.appendChild(link);
         });
         tocListEl.appendChild(frag);
+        updateActiveToc();
       }
 
       function renderPrevNext(posts, index) {
@@ -751,7 +799,7 @@
       function buildMeta(post) {
         const plain = buildPlainText(post);
         const stat = estimateReadStats(plain);
-        return "Updated " + formatDate(post.updatedAt) + " · " + stat.minutes + " min read · " + stat.words + " words";
+        return "Updated " + formatDate(post.updatedAt) + " | " + stat.minutes + " min read | " + stat.words + " words";
       }
 
       function buildPlainText(post) {
@@ -779,8 +827,17 @@
       }
 
       function bindScrollProgress() {
-        window.addEventListener("scroll", updateProgress, { passive: true });
-        window.addEventListener("resize", updateProgress);
+        window.addEventListener("scroll", onViewportChanged, { passive: true });
+        window.addEventListener("resize", onViewportChanged);
+        toTopBtnEl.addEventListener("click", () => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }
+
+      function onViewportChanged() {
+        updateProgress();
+        updateActiveToc();
+        updateToTopButton();
       }
 
       function updateProgress() {
@@ -791,6 +848,47 @@
         }
         const ratio = Math.min(1, Math.max(0, window.scrollY / maxScrollable));
         progressBarEl.style.width = String((ratio * 100).toFixed(1)) + "%";
+      }
+
+      function updateActiveToc() {
+        const tocLinks = Array.from(tocListEl.querySelectorAll(".toc-item"));
+        if (!tocLinks.length) return;
+
+        const anchors = tocLinks
+          .map((link) => {
+            const targetId = link.dataset.targetId || "";
+            const targetEl = targetId ? document.getElementById(targetId) : null;
+            return targetEl ? { id: targetId, link: link, el: targetEl } : null;
+          })
+          .filter(Boolean);
+
+        if (!anchors.length) return;
+
+        const offset = 130;
+        let activeId = anchors[0].id;
+        anchors.forEach((item) => {
+          if (item.el.getBoundingClientRect().top <= offset) {
+            activeId = item.id;
+          }
+        });
+
+        anchors.forEach((item) => {
+          const isActive = item.id === activeId;
+          item.link.classList.toggle("is-active", isActive);
+          if (isActive) {
+            item.link.setAttribute("aria-current", "location");
+          } else {
+            item.link.removeAttribute("aria-current");
+          }
+        });
+      }
+
+      function updateToTopButton() {
+        if (window.scrollY > 280) {
+          toTopBtnEl.classList.add("show");
+        } else {
+          toTopBtnEl.classList.remove("show");
+        }
       }
 
       function parseMarkdownToBlocks(markdown) {

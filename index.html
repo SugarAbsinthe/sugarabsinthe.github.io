@@ -168,6 +168,15 @@
       letter-spacing: 0.01em;
     }
 
+    .profile-updated {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
     .profile-list {
       margin: 0.1rem 0 0;
       padding: 0;
@@ -562,12 +571,9 @@
         </div>
       </div>
       <aside class="hero-profile">
-        <h2>About Me</h2>
-        <ul class="profile-list">
-          <li>Focus: mobile / frontend / dev tools</li>
-          <li>Current goal: publish notes every week</li>
-          <li>Format: markdown + practical code snippets</li>
-        </ul>
+        <h2 id="about-title">About Me</h2>
+        <p id="profile-updated" class="profile-updated" hidden></p>
+        <ul id="profile-list" class="profile-list"></ul>
       </aside>
     </section>
 
@@ -642,6 +648,10 @@
       const countEl = document.getElementById("post-count");
       const filteredCountEl = document.getElementById("filtered-count");
       const savedStatusEl = document.getElementById("saved-status");
+      const aboutTitleEl = document.getElementById("about-title");
+      const profileListEl = document.getElementById("profile-list");
+      const profileUpdatedEl = document.getElementById("profile-updated");
+      const heroQuoteEl = document.querySelector(".hero > div > p");
       const searchInputEl = document.getElementById("search-input");
       const tagFilterEl = document.getElementById("tag-filter");
       const sortSelectEl = document.getElementById("sort-select");
@@ -663,6 +673,7 @@
 
       function init() {
         showSavedStatusIfNeeded();
+        renderProfile();
         bindEvents();
         render();
       }
@@ -704,6 +715,7 @@
       }
 
       function render() {
+        renderProfile();
         const allPosts = postStore.readPosts();
         countEl.textContent = String(allPosts.length);
         renderTagOptions(allPosts);
@@ -893,7 +905,8 @@
         }
 
         setBackupStatus(
-          "Import complete. Inserted " + result.inserted + ", updated " + result.updated + ", skipped " + result.skipped + ".",
+          "Import complete. Inserted " + result.inserted + ", updated " + result.updated + ", skipped " + result.skipped + "." +
+          (result.profileUpdated ? " Profile was also updated." : ""),
           "success"
         );
         render();
@@ -944,6 +957,41 @@
         if (stats.warning) storageNoteEl.classList.add("warning");
         if (stats.critical) storageNoteEl.classList.add("critical");
         storageNoteEl.textContent = "Storage used: " + formatBytes(stats.usedBytes) + " / ~" + formatBytes(stats.softLimitBytes) + " (" + stats.percent + "%)";
+      }
+
+      function renderProfile() {
+        const profile = postStore.readProfile ? postStore.readProfile() : {
+          title: "About Me",
+          quote: "Live like summer flowers.",
+          focus: "mobile / frontend / dev tools",
+          goal: "publish notes every week",
+          format: "markdown + practical code snippets",
+          updatedAt: ""
+        };
+
+        aboutTitleEl.textContent = profile.title || "About Me";
+        heroQuoteEl.textContent = profile.quote || "Live like summer flowers.";
+
+        const rows = [
+          "Focus: " + (profile.focus || "not set"),
+          "Current goal: " + (profile.goal || "not set"),
+          "Format: " + (profile.format || "not set")
+        ];
+
+        profileListEl.innerHTML = "";
+        rows.forEach((text) => {
+          const item = document.createElement("li");
+          item.textContent = text;
+          profileListEl.appendChild(item);
+        });
+
+        if (profile.updatedAt) {
+          profileUpdatedEl.hidden = false;
+          profileUpdatedEl.textContent = "Updated " + formatDate(profile.updatedAt);
+        } else {
+          profileUpdatedEl.hidden = true;
+          profileUpdatedEl.textContent = "";
+        }
       }
 
       function setBackupStatus(message, type) {

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SugarAbsinthe - Profile Settings</title>
+  <meta name="description" content="Edit personal profile fields used in homepage About Me panel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f8ff;
+      --bg-soft: #f2f7ff;
+      --text: #181a2a;
+      --muted: #5a607f;
+      --line: #d8ddf2;
+      --line-strong: #bec8ee;
+      --primary: #6c4dff;
+      --danger: #d03c62;
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --shadow: 0 18px 40px rgba(49, 58, 118, 0.12);
+      --max-width: 960px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Manrope", "Noto Sans SC", sans-serif;
+      font-size: 17px;
+      color: var(--text);
+      background:
+        radial-gradient(42rem 24rem at -10% -10%, rgba(113, 132, 255, 0.2), transparent 62%),
+        radial-gradient(30rem 18rem at 110% -8%, rgba(13, 160, 255, 0.18), transparent 60%),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 56%, var(--bg-soft) 100%);
+    }
+
+    .page {
+      width: min(var(--max-width), 94vw);
+      margin: 0 auto;
+      padding: 1.35rem 0 2.5rem;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 24px rgba(72, 87, 164, 0.1);
+      padding: 0.56rem 0.72rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.62rem;
+      text-decoration: none;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 0.2rem 0.45rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-mark {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, var(--primary) 0%, #5f8bff 100%);
+      box-shadow: 0 8px 14px rgba(108, 77, 255, 0.25);
+      display: inline-block;
+    }
+
+    .brand-text {
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-link {
+      text-decoration: none;
+      color: var(--muted);
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 0.46rem 0.78rem;
+    }
+
+    .btn-link:hover {
+      color: var(--text);
+      border-color: var(--line-strong);
+      background: #fff;
+    }
+
+    .panel {
+      margin-top: 1rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 1.1rem;
+    }
+
+    .panel h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 3.2vw, 2.3rem);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+
+    .panel p {
+      margin: 0.5rem 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+
+    .form {
+      margin-top: 1rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.3rem;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .input {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.96rem;
+      font-weight: 600;
+      padding: 0.56rem 0.64rem;
+    }
+
+    .actions {
+      margin-top: 0.95rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.44rem;
+      align-items: center;
+    }
+
+    .btn {
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 0.54rem 0.82rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      border-color: transparent;
+      background: linear-gradient(120deg, var(--primary) 0%, #5f8bff 100%);
+      color: #fff;
+      box-shadow: 0 8px 16px rgba(108, 77, 255, 0.22);
+    }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: #efb1c4;
+      background: #fff5f8;
+    }
+
+    .status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      min-height: 1.2em;
+    }
+
+    .status.error { color: #b42e51; }
+    .status.success { color: #2f7a4e; }
+
+    .input:focus-visible,
+    .btn:focus-visible,
+    .btn-link:focus-visible,
+    .brand:focus-visible {
+      outline: 3px solid rgba(13, 160, 255, 0.35);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        border-radius: 16px;
+      }
+
+      .panel {
+        padding: 0.92rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">SugarAbsinthe</span>
+      </a>
+      <div class="top-actions">
+        <a class="btn-link" href="./index.html">Back To Notes</a>
+        <a class="btn-link" href="./editor.html">Open Editor</a>
+      </div>
+    </header>
+
+    <main class="panel">
+      <h1>Profile Settings</h1>
+      <p>Edit the personal info shown in homepage About Me card. This editor stays outside homepage for a clean layout.</p>
+
+      <form id="profile-form" class="form">
+        <label class="field" for="title-input">
+          <span class="label">Panel Title</span>
+          <input id="title-input" class="input" type="text" maxlength="48" placeholder="About Me">
+        </label>
+
+        <label class="field" for="quote-input">
+          <span class="label">Quote Line</span>
+          <input id="quote-input" class="input" type="text" maxlength="140" placeholder="Live like summer flowers.">
+        </label>
+
+        <label class="field" for="focus-input">
+          <span class="label">Focus</span>
+          <input id="focus-input" class="input" type="text" maxlength="140" placeholder="mobile / frontend / dev tools">
+        </label>
+
+        <label class="field" for="goal-input">
+          <span class="label">Current Goal</span>
+          <input id="goal-input" class="input" type="text" maxlength="140" placeholder="publish notes every week">
+        </label>
+
+        <label class="field" for="format-input">
+          <span class="label">Format</span>
+          <input id="format-input" class="input" type="text" maxlength="140" placeholder="markdown + practical code snippets">
+        </label>
+      </form>
+
+      <div class="actions">
+        <button id="save-btn" class="btn btn-primary" type="button">Save Profile</button>
+        <button id="reset-btn" class="btn btn-danger" type="button">Reset Default</button>
+        <a class="btn" href="./index.html">View Homepage</a>
+        <p id="status" class="status"></p>
+      </div>
+    </main>
+  </div>
+
+  <script src="./posts-store.js"></script>
+  <script>
+    (() => {
+      const titleInput = document.getElementById("title-input");
+      const quoteInput = document.getElementById("quote-input");
+      const focusInput = document.getElementById("focus-input");
+      const goalInput = document.getElementById("goal-input");
+      const formatInput = document.getElementById("format-input");
+      const saveBtn = document.getElementById("save-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const statusEl = document.getElementById("status");
+
+      init();
+
+      function init() {
+        renderForm(postStore.readProfile());
+        saveBtn.addEventListener("click", onSave);
+        resetBtn.addEventListener("click", onReset);
+      }
+
+      function onSave() {
+        postStore.updateProfile({
+          title: titleInput.value,
+          quote: quoteInput.value,
+          focus: focusInput.value,
+          goal: goalInput.value,
+          format: formatInput.value
+        });
+
+        renderForm(postStore.readProfile());
+        setStatus("Profile updated successfully.", "success");
+      }
+
+      function onReset() {
+        if (!window.confirm("Reset profile to default values?")) return;
+        const next = postStore.resetProfile();
+        renderForm(next);
+        setStatus("Profile reset to default.", "success");
+      }
+
+      function renderForm(profile) {
+        titleInput.value = profile.title || "";
+        quoteInput.value = profile.quote || "";
+        focusInput.value = profile.focus || "";
+        goalInput.value = profile.goal || "";
+        formatInput.value = profile.format || "";
+      }
+
+      function setStatus(message, type) {
+        statusEl.className = "status";
+        if (type === "error") statusEl.classList.add("error");
+        if (type === "success") statusEl.classList.add("success");
+        statusEl.textContent = message;
+      }
+    })();
+  </script>
+</body>
+</html>

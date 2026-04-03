@@ -1,5 +1,6 @@
 (() => {
   const STORAGE_KEY = "astro_blog_posts_v1";
+  const PROFILE_KEY = "astro_blog_profile_v1";
   const EXPORT_VERSION = 1;
   const STORAGE_SOFT_LIMIT_BYTES = 4.5 * 1024 * 1024;
 
@@ -68,12 +69,46 @@
     writePosts(posts);
   }
 
+  function readProfile() {
+    const raw = window.localStorage.getItem(PROFILE_KEY);
+    if (!raw) return defaultProfile();
+
+    try {
+      const parsed = JSON.parse(raw);
+      return sanitizeProfile(parsed);
+    } catch {
+      return defaultProfile();
+    }
+  }
+
+  function writeProfile(profile) {
+    const normalized = sanitizeProfile(profile);
+    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(normalized));
+    return normalized;
+  }
+
+  function updateProfile(payload) {
+    const current = readProfile();
+    const next = sanitizeProfile({
+      ...current,
+      ...(payload && typeof payload === "object" ? payload : {}),
+      updatedAt: new Date().toISOString()
+    });
+    return writeProfile(next);
+  }
+
+  function resetProfile() {
+    const next = defaultProfile();
+    return writeProfile(next);
+  }
+
   function exportBundle() {
     return {
       version: EXPORT_VERSION,
       exportedAt: new Date().toISOString(),
       source: "SugarAbsinthe Notes",
-      posts: readPosts()
+      posts: readPosts(),
+      profile: readProfile()
     };
   }
 
@@ -153,6 +188,11 @@
 
     const nextPosts = Array.from(map.values());
     writePosts(nextPosts);
+    let profileUpdated = false;
+    if (parsed && typeof parsed === "object" && parsed.profile && typeof parsed.profile === "object") {
+      writeProfile(parsed.profile);
+      profileUpdated = true;
+    }
 
     return {
       ok: true,
@@ -162,7 +202,8 @@
       inserted,
       updated,
       skipped: Math.max(0, importedRaw.length - imported.length),
-      total: nextPosts.length
+      total: nextPosts.length,
+      profileUpdated
     };
   }
 
@@ -192,6 +233,30 @@
       favorite: item.favorite === true,
       createdAt: typeof item.createdAt === "string" ? item.createdAt : "",
       updatedAt: typeof item.updatedAt === "string" ? item.updatedAt : ""
+    };
+  }
+
+  function sanitizeProfile(item) {
+    const defaults = defaultProfile();
+    const source = item && typeof item === "object" ? item : {};
+    return {
+      title: normalizeProfileText(source.title, defaults.title, 48),
+      quote: normalizeProfileText(source.quote, defaults.quote, 140),
+      focus: normalizeProfileText(source.focus, defaults.focus, 140),
+      goal: normalizeProfileText(source.goal, defaults.goal, 140),
+      format: normalizeProfileText(source.format, defaults.format, 140),
+      updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : ""
+    };
+  }
+
+  function defaultProfile() {
+    return {
+      title: "About Me",
+      quote: "Live like summer flowers.",
+      focus: "mobile / frontend / dev tools",
+      goal: "publish notes every week",
+      format: "markdown + practical code snippets",
+      updatedAt: ""
     };
   }
 
@@ -238,6 +303,12 @@
     return normalized.slice(0, 12);
   }
 
+  function normalizeProfileText(value, fallback, maxLength) {
+    const next = String(value || "").trim();
+    if (!next) return String(fallback || "");
+    return next.slice(0, maxLength);
+  }
+
   function hasEssentialFields(item) {
     return !!(item && item.id && item.title);
   }
@@ -274,6 +345,10 @@
     getPostById,
     upsertPost,
     deletePost,
+    readProfile,
+    writeProfile,
+    updateProfile,
+    resetProfile,
     exportBundle,
     importBundle,
     getStorageStats

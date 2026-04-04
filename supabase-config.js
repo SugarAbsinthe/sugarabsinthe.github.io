@@ -7,9 +7,9 @@
     Keep enabled=false until you finish setup.
   */
   window.SUPABASE_CONFIG = {
-    enabled: false,
-    url: "",
-    anonKey: "",
+    enabled: true,
+    url: "https://mbeufaudjueocebgaksb.supabase.co",
+    anonKey: "sb_publishable__LFotZeukdUPW_pRwUKxng_g7eOw0Wn",
     postsTable: "blog_posts",
     profileTable: "blog_profiles"
   };

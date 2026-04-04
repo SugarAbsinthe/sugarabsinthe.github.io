@@ -300,6 +300,7 @@
       <div class="top-actions">
         <a class="btn-link" href="./index.html">Back To Notes</a>
         <a class="btn-link" href="./editor.html">Open Editor</a>
+        <span id="cloud-badge" class="btn-link">Cloud: Local Only</span>
       </div>
     </header>
 
@@ -337,7 +338,10 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
   <script src="./posts-store.js"></script>
+  <script src="./cloud-sync.js"></script>
   <script>
     (() => {
       const titleInput = document.getElementById("title-input");
@@ -347,12 +351,44 @@
       const saveBtn = document.getElementById("save-btn");
       const resetBtn = document.getElementById("reset-btn");
       const statusEl = document.getElementById("status");
+      const cloudBadgeEl = document.getElementById("cloud-badge");
 
       init();
 
-      function init() {
+      async function init() {
+        await initCloudContext();
         renderForm(postStore.readProfile());
         bindEvents();
+      }
+
+      async function initCloudContext() {
+        if (!window.cloudSync) {
+          renderCloudBadge({ loggedIn: false });
+          return;
+        }
+
+        const initial = await window.cloudSync.init();
+        renderCloudBadge(initial);
+
+        window.cloudSync.onAuthChanged((next) => {
+          renderCloudBadge(next);
+        });
+
+        if (!initial.loggedIn) return;
+        const pullResult = await window.cloudSync.pullFromCloud();
+        if (!pullResult.ok) {
+          setStatus("Cloud sync warning: " + pullResult.reason, "error");
+        }
+      }
+
+      function renderCloudBadge(syncState) {
+        if (!cloudBadgeEl) return;
+        if (syncState && syncState.loggedIn) {
+          const email = String(syncState.email || "").trim();
+          cloudBadgeEl.textContent = email ? "Cloud: " + email : "Cloud: Signed In";
+          return;
+        }
+        cloudBadgeEl.textContent = "Cloud: Local Only";
       }
 
       function bindEvents() {
@@ -375,7 +411,7 @@
         resetBtn.addEventListener("click", onReset);
       }
 
-      function onSave() {
+      async function onSave() {
         const collection = collectItemsFromForm();
         if (!collection.ok) {
           setStatus(collection.reason, "error");
@@ -383,19 +419,37 @@
           return;
         }
 
-        postStore.updateProfile({
+        const savedProfile = postStore.updateProfile({
           title: titleInput.value,
           quote: quoteInput.value,
           items: collection.items
         });
 
+        if (window.cloudSync && window.cloudSync.getState && window.cloudSync.getState().loggedIn) {
+          const pushResult = await window.cloudSync.pushProfile(savedProfile);
+          if (!pushResult.ok) {
+            setStatus("Profile saved locally, but cloud sync failed: " + pushResult.reason, "error");
+          } else {
+            setStatus("Profile updated and synced to cloud.", "success");
+          }
+        } else {
+          setStatus("Profile updated locally.", "success");
+        }
+
         renderForm(postStore.readProfile());
-        setStatus("Profile updated successfully.", "success");
       }
 
-      function onReset() {
+      async function onReset() {
         if (!window.confirm("Reset profile to default values?")) return;
         const next = postStore.resetProfile();
+        if (window.cloudSync && window.cloudSync.getState && window.cloudSync.getState().loggedIn) {
+          const pushResult = await window.cloudSync.pushProfile(next);
+          if (!pushResult.ok) {
+            setStatus("Reset locally, but cloud sync failed: " + pushResult.reason, "error");
+            renderForm(next);
+            return;
+          }
+        }
         renderForm(next);
         setStatus("Profile reset to default.", "success");
       }

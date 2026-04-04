@@ -342,6 +342,13 @@
       color: #b42e51;
     }
 
+    .sync-grid {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto auto;
+      gap: 0.5rem;
+      align-items: end;
+    }
+
     .posts {
       margin-top: 1rem;
       display: grid;
@@ -532,6 +539,10 @@
       .backup-grid {
         grid-template-columns: 1fr;
       }
+
+      .sync-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 720px) {
@@ -625,6 +636,23 @@
         <input id="import-json-file" type="file" accept=".json,application/json" hidden>
         <p id="backup-status" class="backup-status" aria-live="polite"></p>
       </div>
+
+      <div class="safety-panel">
+        <div class="safety-top">
+          <p class="safety-title">Cloud Sync (Supabase)</p>
+          <p id="auth-note" class="storage-note">Cloud sync is disabled in config.</p>
+        </div>
+        <div class="sync-grid">
+          <label class="field" for="auth-email">
+            <span>Email</span>
+            <input id="auth-email" type="email" placeholder="your@email.com">
+          </label>
+          <button id="auth-login-btn" class="btn-clear" type="button">Send Magic Link</button>
+          <button id="auth-logout-btn" class="btn-clear" type="button" hidden>Sign Out</button>
+          <button id="cloud-sync-btn" class="btn-clear" type="button" disabled>Sync Now</button>
+        </div>
+        <p id="cloud-status" class="backup-status" aria-live="polite"></p>
+      </div>
     </section>
 
     <main>
@@ -640,7 +668,10 @@
     </footer>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
   <script src="./posts-store.js"></script>
+  <script src="./cloud-sync.js"></script>
   <script>
     (() => {
       const listEl = document.getElementById("posts-list");
@@ -662,11 +693,26 @@
       const importModeEl = document.getElementById("import-mode");
       const storageNoteEl = document.getElementById("storage-note");
       const backupStatusEl = document.getElementById("backup-status");
+      const authNoteEl = document.getElementById("auth-note");
+      const authEmailEl = document.getElementById("auth-email");
+      const authLoginBtnEl = document.getElementById("auth-login-btn");
+      const authLogoutBtnEl = document.getElementById("auth-logout-btn");
+      const cloudSyncBtnEl = document.getElementById("cloud-sync-btn");
+      const cloudStatusEl = document.getElementById("cloud-status");
 
       const state = {
         query: "",
         tag: "",
         sort: "updated_desc"
+      };
+      let cloudState = {
+        ready: false,
+        enabled: false,
+        configured: false,
+        loggedIn: false,
+        email: "",
+        userId: "",
+        message: ""
       };
 
       init();
@@ -676,6 +722,7 @@
         renderProfile();
         bindEvents();
         render();
+        void initCloudSync();
       }
 
       function bindEvents() {
@@ -711,6 +758,124 @@
         importJsonFileEl.addEventListener("change", onImportFileChanged);
         importModeEl.addEventListener("change", () => {
           setBackupStatus("", "");
+        });
+        authLoginBtnEl.addEventListener("click", onSendMagicLink);
+        authLogoutBtnEl.addEventListener("click", onSignOut);
+        cloudSyncBtnEl.addEventListener("click", onManualSync);
+      }
+
+      async function initCloudSync() {
+        if (!window.cloudSync) {
+          setCloudStatus("cloud-sync.js was not loaded.", "error");
+          return;
+        }
+
+        const initial = await window.cloudSync.init();
+        cloudState = initial;
+        renderCloudState(initial);
+
+        let previousLoggedIn = !!initial.loggedIn;
+        window.cloudSync.onAuthChanged((next) => {
+          const justSignedIn = !previousLoggedIn && !!next.loggedIn;
+          previousLoggedIn = !!next.loggedIn;
+          cloudState = next;
+          renderCloudState(next);
+          if (justSignedIn) {
+            void runCloudSync("Signed in. Syncing from cloud...");
+          }
+        });
+
+        if (initial.loggedIn) {
+          await runCloudSync("Restoring notes from cloud...");
+        }
+      }
+
+      function renderCloudState(next) {
+        const info = next || cloudState;
+        authNoteEl.textContent = info.message || "Cloud sync is unavailable.";
+
+        const allowLogin = !!(info.enabled && info.configured && !info.loggedIn);
+        authEmailEl.disabled = !allowLogin;
+        authLoginBtnEl.disabled = !allowLogin;
+        authLoginBtnEl.hidden = !!info.loggedIn;
+
+        authLogoutBtnEl.hidden = !info.loggedIn;
+        authLogoutBtnEl.disabled = !info.loggedIn;
+
+        cloudSyncBtnEl.disabled = !info.loggedIn;
+      }
+
+      async function onSendMagicLink() {
+        const email = String(authEmailEl.value || "").trim();
+        if (!email) {
+          setCloudStatus("Please input your email first.", "error");
+          authEmailEl.focus();
+          return;
+        }
+
+        setCloudStatus("Sending login link...", "");
+        const result = await window.cloudSync.sendMagicLink(email);
+        if (!result.ok) {
+          setCloudStatus("Failed to send login link: " + result.reason, "error");
+          return;
+        }
+        setCloudStatus("Login link sent. Check your inbox.", "success");
+      }
+
+      async function onSignOut() {
+        setCloudStatus("Signing out...", "");
+        const result = await window.cloudSync.signOut();
+        if (!result.ok) {
+          setCloudStatus("Sign out failed: " + result.reason, "error");
+          return;
+        }
+        setCloudStatus("Signed out. Local data is still available.", "success");
+      }
+
+      async function onManualSync() {
+        await runCloudSync("Syncing with cloud...");
+      }
+
+      async function runCloudSync(statusMessage) {
+        if (!cloudState.loggedIn) {
+          setCloudStatus("Please sign in before syncing.", "error");
+          return;
+        }
+
+        if (statusMessage) {
+          setCloudStatus(statusMessage, "");
+        }
+
+        const result = await window.cloudSync.syncNow();
+        if (!result.ok) {
+          setCloudStatus("Cloud sync failed: " + result.reason, "error");
+          return;
+        }
+
+        render();
+        setCloudStatus(
+          "Cloud sync complete. Pulled " + result.pulledPosts + ", merged " + result.mergedPosts + ", pushed " + result.pushedPosts + ".",
+          "success"
+        );
+      }
+
+      function pushPostToCloud(post, actionLabel) {
+        if (!cloudState.loggedIn || !window.cloudSync) return;
+        window.cloudSync.pushPost(post).then((result) => {
+          if (!result || result.ok) return;
+          setCloudStatus(actionLabel + " saved locally but cloud sync failed: " + result.reason, "error");
+        }).catch(() => {
+          setCloudStatus(actionLabel + " saved locally but cloud sync failed.", "error");
+        });
+      }
+
+      function deletePostFromCloud(postId) {
+        if (!cloudState.loggedIn || !window.cloudSync) return;
+        window.cloudSync.deletePost(postId).then((result) => {
+          if (!result || result.ok) return;
+          setCloudStatus("Deleted locally but cloud delete failed: " + result.reason, "error");
+        }).catch(() => {
+          setCloudStatus("Deleted locally but cloud delete failed.", "error");
         });
       }
 
@@ -851,7 +1016,7 @@
         const post = postStore.getPostById(id);
         if (!post) return;
 
-        postStore.upsertPost({
+        const savedPost = postStore.upsertPost({
           id: post.id,
           title: post.title,
           content: post.content,
@@ -860,12 +1025,14 @@
           favorite: !post.favorite,
           createdAt: post.createdAt
         });
+        pushPostToCloud(savedPost, "Pin state");
         render();
       }
 
       function onDelete(id) {
         if (!window.confirm("Delete this note?")) return;
         postStore.deletePost(id);
+        deletePostFromCloud(id);
         render();
       }
 
@@ -909,6 +1076,17 @@
           (result.profileUpdated ? " Profile was also updated." : ""),
           "success"
         );
+
+        if (cloudState.loggedIn && window.cloudSync) {
+          setCloudStatus("Pushing imported data to cloud...", "");
+          const pushResult = await window.cloudSync.pushLocalSnapshot();
+          if (!pushResult.ok) {
+            setCloudStatus("Import succeeded locally, but cloud push failed: " + pushResult.reason, "error");
+          } else {
+            setCloudStatus("Imported data pushed to cloud.", "success");
+          }
+        }
+
         render();
       }
 
@@ -1002,6 +1180,13 @@
         if (type === "success") backupStatusEl.classList.add("success");
         if (type === "error") backupStatusEl.classList.add("error");
         backupStatusEl.textContent = message;
+      }
+
+      function setCloudStatus(message, type) {
+        cloudStatusEl.className = "backup-status";
+        if (type === "success") cloudStatusEl.classList.add("success");
+        if (type === "error") cloudStatusEl.classList.add("error");
+        cloudStatusEl.textContent = message;
       }
 
       function downloadFile(content, fileName, mimeType) {

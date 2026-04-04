@@ -647,6 +647,7 @@
       <a class="back-link" href="./index.html">Back To Notes</a>
       <a class="back-link" href="./profile.html">Profile Settings</a>
       <div id="mode-badge" class="mode-badge">New Note</div>
+      <div id="cloud-badge" class="mode-badge">Cloud: Local Only</div>
     </header>
 
     <main class="editor-shell">
@@ -691,7 +692,10 @@
   </div>
   <div id="toast" class="toast" hidden></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
   <script src="./posts-store.js"></script>
+  <script src="./cloud-sync.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script>
     (() => {
@@ -702,6 +706,7 @@
       const statusEl = document.getElementById("status");
       const toastEl = document.getElementById("toast");
       const modeBadgeEl = document.getElementById("mode-badge");
+      const cloudBadgeEl = document.getElementById("cloud-badge");
       const addButtons = Array.from(document.querySelectorAll("[data-add-type]"));
 
       const params = new URLSearchParams(window.location.search);
@@ -718,7 +723,9 @@
 
       init();
 
-      function init() {
+      async function init() {
+        await initCloudContext();
+
         if (postId) {
           existingPost = postStore.getPostById(postId);
         }
@@ -748,6 +755,43 @@
         saveBtn.addEventListener("click", onSave);
         window.addEventListener("keydown", onKeydown);
         window.addEventListener("beforeunload", onBeforeUnload);
+      }
+
+      async function initCloudContext() {
+        if (!window.cloudSync) {
+          renderCloudBadge({
+            loggedIn: false,
+            message: "Cloud script missing."
+          });
+          return;
+        }
+
+        const initial = await window.cloudSync.init();
+        renderCloudBadge(initial);
+
+        window.cloudSync.onAuthChanged((next) => {
+          renderCloudBadge(next);
+        });
+
+        if (!initial.loggedIn) return;
+
+        setStatus("Syncing latest note from cloud...", "");
+        const result = await window.cloudSync.pullFromCloud();
+        if (!result.ok) {
+          setStatus("Cloud sync warning: " + result.reason, "error");
+          return;
+        }
+        setStatus("Cloud synced. Editing latest data.", "success");
+      }
+
+      function renderCloudBadge(syncState) {
+        if (!cloudBadgeEl) return;
+        if (syncState && syncState.loggedIn) {
+          const email = String(syncState.email || "").trim();
+          cloudBadgeEl.textContent = email ? "Cloud: " + email : "Cloud: Signed In";
+          return;
+        }
+        cloudBadgeEl.textContent = "Cloud: Local Only";
       }
 
       function restoreBlocks(post) {
@@ -1187,7 +1231,7 @@
         return null;
       }
 
-      function onSave() {
+      async function onSave() {
         const title = titleInput.value.trim();
         const tags = parseTags(tagsInput.value);
 
@@ -1215,8 +1259,21 @@
         });
         existingPost = savedPost;
 
+        let cloudWarning = "";
+        if (window.cloudSync && window.cloudSync.getState && window.cloudSync.getState().loggedIn) {
+          setStatus("Saved locally. Syncing cloud...", "");
+          const cloudResult = await window.cloudSync.pushPost(savedPost);
+          if (!cloudResult.ok) {
+            cloudWarning = cloudResult.reason || "Cloud sync failed.";
+          }
+        }
+
         clearDraft();
-        setStatus("Saved. Returning to notes...", "success");
+        if (cloudWarning) {
+          setStatus("Saved locally, but cloud sync failed: " + cloudWarning + " Returning to notes...", "error");
+        } else {
+          setStatus("Saved. Returning to notes...", "success");
+        }
         showToast("Note saved.");
         window.setTimeout(() => {
           isSavingAndLeaving = true;
@@ -1228,7 +1285,7 @@
         const isSave = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s";
         if (!isSave) return;
         event.preventDefault();
-        onSave();
+        void onSave();
       }
 
       function onBeforeUnload() {

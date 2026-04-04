@@ -540,6 +540,7 @@
           <button class="font-btn" type="button" data-font-size="l" aria-label="Large text">A+</button>
         </div>
         <a id="edit-link" class="btn btn-primary" href="./editor.html">Edit Note</a>
+        <span id="cloud-badge" class="btn">Cloud: Local Only</span>
       </div>
     </header>
 
@@ -570,7 +571,10 @@
   </div>
   <button id="to-top-btn" class="to-top-btn" type="button" aria-label="Back to top">Top</button>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
   <script src="./posts-store.js"></script>
+  <script src="./cloud-sync.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script>
     (() => {
@@ -588,6 +592,7 @@
       const newerLinkEl = document.getElementById("newer-link");
       const olderLinkEl = document.getElementById("older-link");
       const toTopBtnEl = document.getElementById("to-top-btn");
+      const cloudBadgeEl = document.getElementById("cloud-badge");
       const fontSizeButtons = Array.from(document.querySelectorAll("[data-font-size]"));
 
       const params = new URLSearchParams(window.location.search);
@@ -597,11 +602,38 @@
 
       init();
 
-      function init() {
+      async function init() {
         initFontSizeControls();
+        await initCloudContext();
         renderPage();
         bindScrollProgress();
         onViewportChanged();
+      }
+
+      async function initCloudContext() {
+        if (!window.cloudSync) {
+          renderCloudBadge({ loggedIn: false });
+          return;
+        }
+
+        const initial = await window.cloudSync.init();
+        renderCloudBadge(initial);
+        window.cloudSync.onAuthChanged((next) => {
+          renderCloudBadge(next);
+        });
+
+        if (!initial.loggedIn) return;
+        await window.cloudSync.pullFromCloud();
+      }
+
+      function renderCloudBadge(syncState) {
+        if (!cloudBadgeEl) return;
+        if (syncState && syncState.loggedIn) {
+          const email = String(syncState.email || "").trim();
+          cloudBadgeEl.textContent = email ? "Cloud: " + email : "Cloud: Signed In";
+          return;
+        }
+        cloudBadgeEl.textContent = "Cloud: Local Only";
       }
 
       function renderPage() {
